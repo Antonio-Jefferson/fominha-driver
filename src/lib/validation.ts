@@ -48,3 +48,19 @@ export const resetPasswordSchema = z
     message: "As senhas não conferem",
     path: ["confirmPassword"],
   });
+
+export const driverSignupSchema = z.object({
+  fullName: z.string().min(3, "Informe seu nome completo"),
+  cpf: z
+    .string()
+    .transform((v) => v.replace(/\D/g, ""))
+    .refine((v) => v.length === 11, "Informe um CPF válido"),
+  phone: z.string().min(8, "Informe um telefone válido"),
+  vehicleType: z.string().optional(),
+  vehiclePlate: z.string().optional(),
+  city: z.enum([...ALLOWED_CITIES] as [string, ...string[]], {
+    errorMap: () => ({ message: "Escolha sua cidade de atuação" }),
+  }),
+});
+
+export type DriverSignupForm = z.infer<typeof driverSignupSchema>;

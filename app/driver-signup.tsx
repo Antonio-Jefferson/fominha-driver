@@ -8,6 +8,7 @@ import { CityRadioList } from "../src/ui/CityRadioList";
 import { signupDriver } from "../src/api/driver";
 import { useDriver } from "../src/driver/DriverContext";
 import { ALLOWED_CITIES, type AllowedCity } from "../src/@types/auth";
+import { driverSignupSchema } from "../src/lib/validation";
 
 export default function DriverSignupScreen() {
   const router = useRouter();
@@ -24,32 +25,29 @@ export default function DriverSignupScreen() {
 
   async function onSubmit() {
     setError(null);
-    if (fullName.trim().length < 3) {
-      setError("Informe seu nome completo.");
-      return;
-    }
-    if (cpf.replace(/\D/g, "").length !== 11) {
-      setError("Informe um CPF válido.");
-      return;
-    }
-    if (phone.trim().length < 8) {
-      setError("Informe um telefone válido.");
-      return;
-    }
-    if (!city) {
-      setError("Escolha sua cidade de atuação.");
+
+    const parsed = driverSignupSchema.safeParse({
+      fullName,
+      cpf,
+      phone,
+      vehicleType: vehicleType.trim() || undefined,
+      vehiclePlate: vehiclePlate.trim() || undefined,
+      city,
+    });
+    if (!parsed.success) {
+      setError(parsed.error.issues[0].message);
       return;
     }
 
     setSubmitting(true);
     try {
       await signupDriver({
-        tx_full_name: fullName.trim(),
-        tx_cpf: cpf.replace(/\D/g, ""),
-        tx_phone: phone.trim(),
-        tx_vehicle_type: vehicleType.trim() || undefined,
-        tx_vehicle_plate: vehiclePlate.trim() || undefined,
-        tx_city: city,
+        tx_full_name: parsed.data.fullName.trim(),
+        tx_cpf: parsed.data.cpf,
+        tx_phone: parsed.data.phone.trim(),
+        tx_vehicle_type: parsed.data.vehicleType,
+        tx_vehicle_plate: parsed.data.vehiclePlate,
+        tx_city: parsed.data.city,
       });
       await refreshDriver();
       router.replace("/pending-approval");

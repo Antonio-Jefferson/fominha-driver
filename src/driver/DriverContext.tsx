@@ -8,7 +8,6 @@ import {
 } from "react";
 import { useAuth } from "../auth/AuthContext";
 import { getDriverMe } from "../api/driver";
-import { ApiError } from "../api/errors";
 import type { DriverProfile } from "../@types/driver";
 
 type DriverContextValue = {
@@ -39,17 +38,12 @@ export function DriverProvider({ children }: { children: ReactNode }) {
       const profile = await getDriverMe();
       setDriver(profile);
       setHasSignedUp(true);
-    } catch (err) {
-      // 404 é o caso normal de "ainda não virou entregador" — qualquer outro
-      // erro também cai aqui como "sem cadastro" pra não travar a navegação;
-      // as telas que dependem de dados de entregador tratam o erro delas.
-      if (err instanceof ApiError && err.status === 404) {
-        setDriver(null);
-        setHasSignedUp(false);
-      } else {
-        setDriver(null);
-        setHasSignedUp(false);
-      }
+    } catch {
+      // 404 (sem cadastro) e qualquer outro erro caem no mesmo estado "sem
+      // cadastro" pra não travar a navegação; telas que dependem de dados
+      // de entregador tratam o erro delas.
+      setDriver(null);
+      setHasSignedUp(false);
     } finally {
       setIsLoading(false);
     }
