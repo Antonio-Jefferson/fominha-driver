@@ -46,6 +46,9 @@ export default function ActiveDeliveryScreen() {
   const [error, setError] = useState<string | null>(null);
   const [codeModalOpen, setCodeModalOpen] = useState(false);
   const [code, setCode] = useState("");
+  // Hooks (e o derivado `geocodableDestination`) precisam ficar antes de
+  // qualquer return condicional — Rules of Hooks. O JSX que realmente usa
+  // esses dados só aparece bem mais abaixo, depois do guard de loading.
   const [destinationCoords, setDestinationCoords] = useState<Coordinates | null>(null);
   const [driverCoords, setDriverCoords] = useState<Coordinates | null>(null);
 
@@ -62,9 +65,25 @@ export default function ActiveDeliveryScreen() {
     : null;
   const googleMapsApiKey = Constants.expoConfig?.extra?.googleMapsApiKey as string | undefined;
 
+  // Cancela resultado de geocoding fora de ordem: se o destino mudar de
+  // novo antes da resposta anterior chegar, essa resposta antiga não pode
+  // sobrescrever o resultado do destino atual. Mesmo padrão do efeito de
+  // posição do entregador logo abaixo. `setDestinationCoords(null)` no
+  // início evita mostrar o pin do destino anterior como se já fosse o
+  // atual enquanto o novo geocoding ainda está em voo.
   useEffect(() => {
+    let cancelled = false;
+    setDestinationCoords(null);
+
     if (!geocodableDestination) return;
-    void geocodeAddress(geocodableDestination, googleMapsApiKey ?? "").then(setDestinationCoords);
+
+    void geocodeAddress(geocodableDestination, googleMapsApiKey ?? "").then((coords) => {
+      if (!cancelled) setDestinationCoords(coords);
+    });
+
+    return () => {
+      cancelled = true;
+    };
   }, [geocodableDestination, googleMapsApiKey]);
 
   useEffect(() => {
@@ -148,6 +167,7 @@ export default function ActiveDeliveryScreen() {
         {destinationCoords ? (
           <View className="h-64 overflow-hidden rounded">
             <MapView
+              key={destinationCoords ? `${destinationCoords.latitude},${destinationCoords.longitude}` : "no-destination"}
               provider={PROVIDER_GOOGLE}
               style={{ flex: 1 }}
               initialRegion={{
