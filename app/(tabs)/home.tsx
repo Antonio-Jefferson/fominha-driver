@@ -3,6 +3,7 @@ import { FlatList, Switch, Text, View } from "react-native";
 import { useRouter } from "expo-router";
 import { useQuery } from "@tanstack/react-query";
 import Toast from "react-native-toast-message";
+import * as Location from "expo-location";
 import { Screen } from "../../src/ui/Screen";
 import { Button } from "../../src/ui/Button";
 import { EmptyState } from "../../src/ui/EmptyState";
@@ -10,6 +11,7 @@ import { LoadingSpinner } from "../../src/ui/LoadingSpinner";
 import { getActiveDelivery, setOnline } from "../../src/api/deliveries";
 import { useOffers, secondsUntil } from "../../src/driver/useOffers";
 import { useDriver } from "../../src/driver/DriverContext";
+import { useLocationTracking } from "../../src/maps/useLocationTracking";
 import type { DeliveryOffer } from "../../src/@types/driver";
 
 function showError(err: unknown, fallback: string) {
@@ -83,7 +85,20 @@ export default function HomeScreen() {
 
   const { offers, isLoading, accept, decline } = useOffers(online && !activeQuery.data);
 
+  useLocationTracking({ online, hasActiveDelivery: Boolean(activeQuery.data) });
+
   async function toggleOnline(value: boolean) {
+    if (value) {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== "granted") {
+        showError(
+          null,
+          "Precisamos da sua localização para te conectar a entregas. Ative a permissão de localização nas configurações do app."
+        );
+        return;
+      }
+    }
+
     setTogglingOnline(true);
     try {
       const result = await setOnline(value);
