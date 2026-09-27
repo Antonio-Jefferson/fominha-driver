@@ -9,6 +9,7 @@ import { EmptyState } from "../../src/ui/EmptyState";
 import { LoadingSpinner } from "../../src/ui/LoadingSpinner";
 import { getActiveDelivery, setOnline } from "../../src/api/deliveries";
 import { useOffers, secondsUntil } from "../../src/driver/useOffers";
+import { useDriver } from "../../src/driver/DriverContext";
 import type { DeliveryOffer } from "../../src/@types/driver";
 
 function showError(err: unknown, fallback: string) {
@@ -54,6 +55,12 @@ export default function HomeScreen() {
   const router = useRouter();
   const [online, setOnlineState] = useState(false);
   const [togglingOnline, setTogglingOnline] = useState(false);
+
+  const { driver } = useDriver();
+
+  useEffect(() => {
+    if (driver) setOnlineState(driver.bool_online);
+  }, [driver]);
 
   const activeQuery = useQuery({
     queryKey: ["active-delivery"],
