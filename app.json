@@ -11,6 +11,9 @@
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.aquitem.fominhadriver",
+      "config": {
+        "googleMapsApiKey": "SUA_CHAVE_AQUI"
+      },
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
         "NSLocationWhenInUseUsageDescription": "Usamos sua localização para te conectar a entregas próximas e mostrar a rota até o destino."
@@ -18,6 +21,11 @@
     },
     "android": {
       "package": "com.aquitem.fominhadriver",
+      "config": {
+        "googleMaps": {
+          "apiKey": "SUA_CHAVE_AQUI"
+        }
+      },
       "adaptiveIcon": {
         "foregroundImage": "./assets/icon.png",
         "backgroundColor": "#F59E0B"
@@ -47,7 +55,8 @@
       ]
     ],
     "extra": {
-      "router": {}
+      "router": {},
+      "googleMapsApiKey": "SUA_CHAVE_AQUI"
     }
   }
 }

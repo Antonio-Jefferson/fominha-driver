@@ -1,4 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import Constants from "expo-constants";
+import * as Location from "expo-location";
+import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
+import { geocodeAddress, type Coordinates } from "../../src/maps/geocodeAddress";
 import { Modal, ScrollView, Text, View } from "react-native";
 import { useRouter } from "expo-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -42,12 +46,47 @@ export default function ActiveDeliveryScreen() {
   const [error, setError] = useState<string | null>(null);
   const [codeModalOpen, setCodeModalOpen] = useState(false);
   const [code, setCode] = useState("");
+  const [destinationCoords, setDestinationCoords] = useState<Coordinates | null>(null);
+  const [driverCoords, setDriverCoords] = useState<Coordinates | null>(null);
 
   const { data: delivery, isLoading } = useQuery({
     queryKey: ["active-delivery"],
     queryFn: getActiveDelivery,
     refetchInterval: 10_000,
   });
+
+  const geocodableDestination = delivery
+    ? delivery.enum_status === "READY_FOR_PICKUP"
+      ? delivery.pickup
+      : delivery.dropoff
+    : null;
+  const googleMapsApiKey = Constants.expoConfig?.extra?.googleMapsApiKey as string | undefined;
+
+  useEffect(() => {
+    if (!geocodableDestination) return;
+    void geocodeAddress(geocodableDestination, googleMapsApiKey ?? "").then(setDestinationCoords);
+  }, [geocodableDestination, googleMapsApiKey]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadDriverPosition() {
+      const { status } = await Location.getForegroundPermissionsAsync();
+      if (status !== "granted" || cancelled) return;
+      const position = await Location.getCurrentPositionAsync({});
+      if (!cancelled) {
+        setDriverCoords({
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+        });
+      }
+    }
+
+    void loadDriverPosition();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   if (isLoading || !delivery) return <LoadingSpinner />;
 
@@ -106,6 +145,26 @@ export default function ActiveDeliveryScreen() {
   return (
     <Screen>
       <ScrollView contentContainerClassName="gap-4 pb-10">
+        {destinationCoords ? (
+          <View className="h-64 overflow-hidden rounded">
+            <MapView
+              provider={PROVIDER_GOOGLE}
+              style={{ flex: 1 }}
+              initialRegion={{
+                latitude: destinationCoords.latitude,
+                longitude: destinationCoords.longitude,
+                latitudeDelta: 0.02,
+                longitudeDelta: 0.02,
+              }}
+            >
+              <Marker coordinate={destinationCoords} title={destinationLabel} pinColor="#F59E0B" />
+              {driverCoords ? (
+                <Marker coordinate={driverCoords} title="Você" pinColor="#1F1F1F" />
+              ) : null}
+            </MapView>
+          </View>
+        ) : null}
+
         <View className="mt-4 gap-1">
           <Text className="text-xs font-bold uppercase tracking-wide text-muted-foreground">
             {destinationLabel}
