@@ -1,0 +1,53 @@
+{
+  "expo": {
+    "name": "Fominha Entregador",
+    "slug": "fominha-driver",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "scheme": "fominhadriver",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "icon": "./assets/icon.png",
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.aquitem.fominhadriver",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSLocationWhenInUseUsageDescription": "Usamos sua localização para te conectar a entregas próximas e mostrar a rota até o destino."
+      }
+    },
+    "android": {
+      "package": "com.aquitem.fominhadriver",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/icon.png",
+        "backgroundColor": "#F59E0B"
+      },
+      "permissions": ["ACCESS_FINE_LOCATION", "ACCESS_COARSE_LOCATION"]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      [
+        "expo-notifications",
+        {
+          "color": "#F59E0B"
+        }
+      ],
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/fominha-logo.png",
+          "imageWidth": 220,
+          "resizeMode": "contain",
+          "backgroundColor": "#F59E0B"
+        }
+      ]
+    ],
+    "extra": {
+      "router": {}
+    }
+  }
+}
