@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { FlatList, Switch, Text, View } from "react-native";
 import { useRouter } from "expo-router";
 import { useQuery } from "@tanstack/react-query";
@@ -60,15 +60,21 @@ export default function HomeScreen() {
 
   const { driver } = useDriver();
 
-  // Assume que nenhuma outra tela montada chama refreshDriver() enquanto um
-  // toggle está em voo — hoje é verdade (pending-approval e home nunca
-  // coexistem; driver-signup só roda antes de existir sessão de entregador
-  // ativa). Se uma tela futura (ex.: perfil) passar a chamar refreshDriver()
-  // com a Home ainda montada em background (abas ficam montadas), uma
-  // corrida entre o toggle e esse refresh pode reverter o switch pro valor
-  // antigo de bool_online sem avisar o usuário.
+  // A Task 17 (Perfil) confirmou que esta corrida deixou de ser teórica:
+  // Profile chama refreshDriver() depois de salvar, e abas do bottom-tab
+  // navigator ficam montadas em segundo plano por padrão — então, sem essa
+  // guarda, um refreshDriver() disparado por outra aba enquanto um toggle
+  // está em voo podia reverter o switch pro valor antigo de bool_online sem
+  // avisar o usuário. Corrigido sincronizando só uma vez, no carregamento
+  // inicial do perfil — depois disso, toggleOnline (via setOnlineState) já
+  // é a única fonte de verdade local, e refreshDriver() de outras telas não
+  // pisa mais nela.
+  const onlineInitializedRef = useRef(false);
   useEffect(() => {
-    if (driver) setOnlineState(driver.bool_online);
+    if (driver && !onlineInitializedRef.current) {
+      setOnlineState(driver.bool_online);
+      onlineInitializedRef.current = true;
+    }
   }, [driver]);
 
   const activeQuery = useQuery({
