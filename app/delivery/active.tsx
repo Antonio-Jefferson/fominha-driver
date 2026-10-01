@@ -219,7 +219,11 @@ export default function ActiveDeliveryScreen() {
             <Button
               label="Navegar"
               variant="outline"
-              onPress={() => void openNavigation(destinationCoords)}
+              onPress={() =>
+                void openNavigation(destinationCoords).catch(() =>
+                  setError("Não foi possível abrir o app de navegação.")
+                )
+              }
             />
           </>
         ) : null}

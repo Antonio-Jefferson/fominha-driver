@@ -16,7 +16,8 @@
       },
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
-        "NSLocationWhenInUseUsageDescription": "Usamos sua localização para te conectar a entregas próximas e mostrar a rota até o destino."
+        "NSLocationWhenInUseUsageDescription": "Usamos sua localização para te conectar a entregas próximas e mostrar a rota até o destino.",
+        "LSApplicationQueriesSchemes": ["comgooglemaps"]
       }
     },
     "android": {
