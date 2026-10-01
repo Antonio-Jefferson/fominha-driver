@@ -38,6 +38,7 @@ export default function RootLayout() {
               <Stack.Screen name="pending-approval" />
               <Stack.Screen name="delivery/active" />
               <Stack.Screen name="withdrawals" options={{ headerShown: true, title: "Histórico de saques" }} />
+              <Stack.Screen name="legal/[slug]" options={{ headerShown: true, title: "Documento" }} />
             </Stack>
             <Toast />
           </DriverProvider>

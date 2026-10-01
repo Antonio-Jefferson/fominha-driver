@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { FlatList, Text, View } from "react-native";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import Toast from "react-native-toast-message";
 import { Screen } from "../../src/ui/Screen";
 import { EmptyState } from "../../src/ui/EmptyState";
 import { LoadingSpinner } from "../../src/ui/LoadingSpinner";
@@ -15,7 +16,11 @@ export default function NotificationsScreen() {
 
   useEffect(() => {
     if (data && data.unread > 0) {
-      void markAllRead().then(() => queryClient.invalidateQueries({ queryKey: ["notifications"] }));
+      void markAllRead()
+        .then(() => queryClient.invalidateQueries({ queryKey: ["notifications"] }))
+        .catch(() => {
+          Toast.show({ type: "error", text1: "Não foi possível marcar as notificações como lidas." });
+        });
     }
   }, [data, queryClient]);
 
