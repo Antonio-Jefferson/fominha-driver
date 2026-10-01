@@ -4,6 +4,7 @@ import * as Location from "expo-location";
 import MapView, { Marker, Polyline, PROVIDER_GOOGLE } from "react-native-maps";
 import { geocodeAddress, type Coordinates } from "../../src/maps/geocodeAddress";
 import { getRoute, type Route } from "../../src/maps/getRoute";
+import { openNavigation } from "../../src/maps/openNavigation";
 import { Modal, ScrollView, Text, View } from "react-native";
 import { useRouter } from "expo-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -214,6 +215,12 @@ export default function ActiveDeliveryScreen() {
                 {route.distanceText} • {route.durationText}
               </Text>
             ) : null}
+
+            <Button
+              label="Navegar"
+              variant="outline"
+              onPress={() => void openNavigation(destinationCoords)}
+            />
           </>
         ) : null}
 
