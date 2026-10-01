@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import Constants from "expo-constants";
 import * as Location from "expo-location";
-import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
+import MapView, { Marker, Polyline, PROVIDER_GOOGLE } from "react-native-maps";
 import { geocodeAddress, type Coordinates } from "../../src/maps/geocodeAddress";
+import { getRoute, type Route } from "../../src/maps/getRoute";
 import { Modal, ScrollView, Text, View } from "react-native";
 import { useRouter } from "expo-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -107,6 +108,13 @@ export default function ActiveDeliveryScreen() {
     };
   }, []);
 
+  const [route, setRoute] = useState<Route | null>(null);
+
+  useEffect(() => {
+    if (!driverCoords || !destinationCoords || !googleMapsApiKey) return;
+    void getRoute(driverCoords, destinationCoords, googleMapsApiKey).then(setRoute);
+  }, [driverCoords, destinationCoords, googleMapsApiKey]);
+
   if (isLoading || !delivery) return <LoadingSpinner />;
 
   const activeDelivery = delivery;
@@ -165,24 +173,35 @@ export default function ActiveDeliveryScreen() {
     <Screen>
       <ScrollView contentContainerClassName="gap-4 pb-10">
         {destinationCoords ? (
-          <View className="h-64 overflow-hidden rounded">
-            <MapView
-              key={destinationCoords ? `${destinationCoords.latitude},${destinationCoords.longitude}` : "no-destination"}
-              provider={PROVIDER_GOOGLE}
-              style={{ flex: 1 }}
-              initialRegion={{
-                latitude: destinationCoords.latitude,
-                longitude: destinationCoords.longitude,
-                latitudeDelta: 0.02,
-                longitudeDelta: 0.02,
-              }}
-            >
-              <Marker coordinate={destinationCoords} title={destinationLabel} pinColor="#F59E0B" />
-              {driverCoords ? (
-                <Marker coordinate={driverCoords} title="Você" pinColor="#1F1F1F" />
-              ) : null}
-            </MapView>
-          </View>
+          <>
+            <View className="h-64 overflow-hidden rounded">
+              <MapView
+                key={destinationCoords ? `${destinationCoords.latitude},${destinationCoords.longitude}` : "no-destination"}
+                provider={PROVIDER_GOOGLE}
+                style={{ flex: 1 }}
+                initialRegion={{
+                  latitude: destinationCoords.latitude,
+                  longitude: destinationCoords.longitude,
+                  latitudeDelta: 0.02,
+                  longitudeDelta: 0.02,
+                }}
+              >
+                <Marker coordinate={destinationCoords} title={destinationLabel} pinColor="#F59E0B" />
+                {driverCoords ? (
+                  <Marker coordinate={driverCoords} title="Você" pinColor="#1F1F1F" />
+                ) : null}
+                {route ? (
+                  <Polyline coordinates={route.points} strokeColor="#F59E0B" strokeWidth={4} />
+                ) : null}
+              </MapView>
+            </View>
+
+            {route ? (
+              <Text className="text-sm text-muted-foreground">
+                {route.distanceText} • {route.durationText}
+              </Text>
+            ) : null}
+          </>
         ) : null}
 
         <View className="mt-4 gap-1">
