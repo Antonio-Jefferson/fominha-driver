@@ -110,9 +110,22 @@ export default function ActiveDeliveryScreen() {
 
   const [route, setRoute] = useState<Route | null>(null);
 
+  // Mesma proteção de corrida do efeito de geocoding acima: se o destino
+  // mudar de novo antes da resposta da Directions API chegar, essa resposta
+  // antiga não pode sobrescrever a rota do destino atual.
   useEffect(() => {
+    let cancelled = false;
+    setRoute(null);
+
     if (!driverCoords || !destinationCoords || !googleMapsApiKey) return;
-    void getRoute(driverCoords, destinationCoords, googleMapsApiKey).then(setRoute);
+
+    void getRoute(driverCoords, destinationCoords, googleMapsApiKey).then((result) => {
+      if (!cancelled) setRoute(result);
+    });
+
+    return () => {
+      cancelled = true;
+    };
   }, [driverCoords, destinationCoords, googleMapsApiKey]);
 
   if (isLoading || !delivery) return <LoadingSpinner />;
@@ -186,12 +199,12 @@ export default function ActiveDeliveryScreen() {
                   longitudeDelta: 0.02,
                 }}
               >
+                {route ? (
+                  <Polyline coordinates={route.points} strokeColor="#F59E0B" strokeWidth={4} />
+                ) : null}
                 <Marker coordinate={destinationCoords} title={destinationLabel} pinColor="#F59E0B" />
                 {driverCoords ? (
                   <Marker coordinate={driverCoords} title="Você" pinColor="#1F1F1F" />
-                ) : null}
-                {route ? (
-                  <Polyline coordinates={route.points} strokeColor="#F59E0B" strokeWidth={4} />
                 ) : null}
               </MapView>
             </View>
