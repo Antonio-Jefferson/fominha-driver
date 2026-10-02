@@ -21,15 +21,22 @@ type DriverContextValue = {
 const DriverContext = createContext<DriverContextValue | null>(null);
 
 export function DriverProvider({ children }: { children: ReactNode }) {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
+  const userId = user?.id ?? null;
   const [driver, setDriver] = useState<DriverProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [hasSignedUp, setHasSignedUp] = useState(false);
+  // Usuário para o qual `driver`/`hasSignedUp` já foram resolvidos. Sem isso,
+  // no login há uma renderização com `isAuthenticated=true` e `isLoading=false`
+  // (o efeito de busca só roda depois dela): as telas leem "sem cadastro" e
+  // mandam o entregador que já é cadastrado para /driver-signup.
+  const [resolvedFor, setResolvedFor] = useState<string | null>(null);
 
   const refreshDriver = useCallback(async () => {
     if (!isAuthenticated) {
       setDriver(null);
       setHasSignedUp(false);
+      setResolvedFor(null);
       setIsLoading(false);
       return;
     }
@@ -45,16 +52,24 @@ export function DriverProvider({ children }: { children: ReactNode }) {
       setDriver(null);
       setHasSignedUp(false);
     } finally {
+      setResolvedFor(userId);
       setIsLoading(false);
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, userId]);
 
   useEffect(() => {
     void refreshDriver();
   }, [refreshDriver]);
 
   return (
-    <DriverContext.Provider value={{ driver, isLoading, hasSignedUp, refreshDriver }}>
+    <DriverContext.Provider
+      value={{
+        driver,
+        isLoading: isLoading || (isAuthenticated && resolvedFor !== userId),
+        hasSignedUp,
+        refreshDriver,
+      }}
+    >
       {children}
     </DriverContext.Provider>
   );

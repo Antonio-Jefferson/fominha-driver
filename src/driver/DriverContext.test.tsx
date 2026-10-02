@@ -5,8 +5,12 @@ import * as driverApi from "../api/driver";
 import { ApiError } from "../api/errors";
 
 jest.mock("../api/driver");
+let mockAuth: { isAuthenticated: boolean; user: { id: string } | null } = {
+  isAuthenticated: true,
+  user: { id: "u1" },
+};
 jest.mock("../auth/AuthContext", () => ({
-  useAuth: () => ({ isAuthenticated: true }),
+  useAuth: () => mockAuth,
 }));
 
 const mockedDriverApi = driverApi as jest.Mocked<typeof driverApi>;
@@ -23,7 +27,10 @@ function Probe() {
 }
 
 describe("DriverContext", () => {
-  beforeEach(() => jest.clearAllMocks());
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockAuth = { isAuthenticated: true, user: { id: "u1" } };
+  });
 
   it("carrega o perfil de entregador quando ele já existe", async () => {
     mockedDriverApi.getDriverMe.mockResolvedValue({
@@ -61,5 +68,47 @@ describe("DriverContext", () => {
     await waitFor(() => expect(screen.getByTestId("loading")).toHaveTextContent("false"));
     expect(screen.getByTestId("signed-up")).toHaveTextContent("false");
     expect(screen.getByTestId("status")).toHaveTextContent("-");
+  });
+
+  it("fica em loading desde a primeira renderização depois do login, sem expor 'sem cadastro'", async () => {
+    mockAuth = { isAuthenticated: false, user: null };
+    mockedDriverApi.getDriverMe.mockResolvedValue({
+      id_driver: "d1",
+      enum_status: "PENDING_APPROVAL",
+      tx_status_reason: null,
+      tx_full_name: "Fulano",
+      tx_phone: "11999999999",
+      tx_vehicle_type: "MOTO",
+      tx_vehicle_plate: "ABC1234",
+      tx_city: "Santa Inês",
+      bool_online: false,
+    });
+
+    // Cada renderização com usuário logado e (loading=false, signed-up=false)
+    // é o instante em que o TabsLayout redirecionaria para o cadastro.
+    const unsafeRenders: string[] = [];
+    function Spy() {
+      const { isLoading, hasSignedUp } = useDriver();
+      if (mockAuth.isAuthenticated && !isLoading && !hasSignedUp) {
+        unsafeRenders.push("redirect-para-cadastro");
+      }
+      return null;
+    }
+
+    // Elemento novo a cada chamada: com a mesma referência o React pula o re-render.
+    const tree = () => (
+      <DriverProvider>
+        <Probe />
+        <Spy />
+      </DriverProvider>
+    );
+    const { rerender } = render(tree());
+    await waitFor(() => expect(screen.getByTestId("loading")).toHaveTextContent("false"));
+
+    mockAuth = { isAuthenticated: true, user: { id: "u1" } };
+    rerender(tree());
+
+    await waitFor(() => expect(screen.getByTestId("signed-up")).toHaveTextContent("true"));
+    expect(unsafeRenders).toEqual([]);
   });
 });
