@@ -30,8 +30,8 @@
         }
       },
       "adaptiveIcon": {
-        "foregroundImage": "./assets/icon.png",
-        "backgroundColor": "#F59E0B"
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#FF7A0A"
       },
       "permissions": [
         "ACCESS_FINE_LOCATION",
