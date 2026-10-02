@@ -167,7 +167,7 @@ export default function RegisterScreen() {
             {step === "email"
               ? "Só o essencial para começar."
               : step === "code"
-                ? `Código de 6 dígitos enviado para ${email}.`
+                ? `Código de 4 dígitos enviado para ${email}.`
                 : "A cidade define quais lojas aparecem para você."}
           </Text>
         </View>

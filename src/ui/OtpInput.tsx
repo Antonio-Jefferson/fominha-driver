@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Pressable, Text, TextInput, View } from "react-native";
 
-const LENGTH = 6;
+const LENGTH = 4;
 const RESEND_SECONDS = 60;
 
 function formatSeconds(total: number) {
@@ -11,7 +11,7 @@ function formatSeconds(total: number) {
 }
 
 /**
- * Entrada de código de verificação em 6 caixas. O `TextInput` real fica
+ * Entrada de código de verificação em 4 caixas. O `TextInput` real fica
  * escondido (tamanho zero) e recebe o foco ao tocar nas caixas — é ele quem
  * carrega o `accessibilityLabel="Código"` testado no restante do app.
  */

@@ -33,7 +33,7 @@ describe("ForgotPasswordScreen", () => {
     render(<ForgotPasswordScreen />);
     await advanceToResetStep();
 
-    fireEvent.changeText(screen.getByLabelText("Código"), "123456");
+    fireEvent.changeText(screen.getByLabelText("Código"), "1234");
     fireEvent.changeText(screen.getByLabelText("Nova senha"), "novaSenha1");
     fireEvent.changeText(screen.getByLabelText("Confirmar senha"), "novaSenha1");
     fireEvent.press(screen.getByText("Redefinir senha"));
@@ -41,7 +41,7 @@ describe("ForgotPasswordScreen", () => {
     await waitFor(() =>
       expect(mockedAuthApi.resetPassword).toHaveBeenCalledWith({
         email: "ana@example.com",
-        code: "123456",
+        code: "1234",
         newPassword: "novaSenha1",
       })
     );
@@ -51,7 +51,7 @@ describe("ForgotPasswordScreen", () => {
     render(<ForgotPasswordScreen />);
     await advanceToResetStep();
 
-    fireEvent.changeText(screen.getByLabelText("Código"), "123456");
+    fireEvent.changeText(screen.getByLabelText("Código"), "1234");
     fireEvent.changeText(screen.getByLabelText("Nova senha"), "novaSenha1");
     fireEvent.changeText(screen.getByLabelText("Confirmar senha"), "outraSenha1");
     fireEvent.press(screen.getByText("Redefinir senha"));
@@ -67,7 +67,7 @@ describe("ForgotPasswordScreen", () => {
     render(<ForgotPasswordScreen />);
     await advanceToResetStep();
 
-    fireEvent.changeText(screen.getByLabelText("Código"), "123456");
+    fireEvent.changeText(screen.getByLabelText("Código"), "1234");
     fireEvent.changeText(screen.getByLabelText("Nova senha"), "novaSenha1");
     fireEvent.changeText(screen.getByLabelText("Confirmar senha"), "novaSenha1");
     fireEvent.press(screen.getByText("Redefinir senha"));

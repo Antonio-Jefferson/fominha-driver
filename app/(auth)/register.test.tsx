@@ -82,7 +82,7 @@ async function advanceToCodeStep() {
 async function advanceToPasswordStep() {
   await advanceToCodeStep();
   mockedAuthApi.confirmVerificationCode.mockResolvedValue({ signupToken: "tok" });
-  fireEvent.changeText(screen.getByLabelText("Código"), "123456");
+  fireEvent.changeText(screen.getByLabelText("Código"), "1234");
   fireEvent.press(screen.getByText("Confirmar código"));
   await waitFor(() => expect(screen.getByLabelText("Senha")).toBeTruthy());
 }
@@ -116,7 +116,7 @@ describe("RegisterScreen", () => {
 
     expect(mockedAuthApi.confirmVerificationCode).toHaveBeenCalledWith({
       email: "ana@example.com",
-      code: "123456",
+      code: "1234",
     });
   });
 

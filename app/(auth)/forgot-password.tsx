@@ -51,8 +51,8 @@ export default function ForgotPasswordScreen() {
   async function handleReset() {
     setError(null);
 
-    if (code.length !== 6) {
-      setError("Digite o código de 6 dígitos");
+    if (code.length !== 4) {
+      setError("Digite o código de 4 dígitos");
       return;
     }
 
