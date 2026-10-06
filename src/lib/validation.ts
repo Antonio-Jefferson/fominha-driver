@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { ALLOWED_CITIES } from "../@types/auth";
+import { isValidCpf } from "./masks";
 
 // zod 3.25's built-in .email() exige TLD de 2+ letras e rejeita "a@b.c".
 // Uma checagem simples de "algo@algo.algo" basta para o front; o backend valida de verdade.
@@ -54,8 +55,10 @@ export const driverSignupSchema = z.object({
   cpf: z
     .string()
     .transform((v) => v.replace(/\D/g, ""))
-    .refine((v) => v.length === 11, "Informe um CPF válido"),
-  phone: z.string().min(8, "Informe um telefone válido"),
+    .refine(isValidCpf, "Informe um CPF válido"),
+  phone: z
+    .string()
+    .refine((v) => v.replace(/\D/g, "").length >= 10, "Informe um telefone com DDD"),
   vehicleType: z.string().optional(),
   vehiclePlate: z.string().optional(),
   city: z.enum([...ALLOWED_CITIES] as [string, ...string[]], {

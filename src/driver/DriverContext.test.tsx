@@ -1,5 +1,5 @@
 import { Text } from "react-native";
-import { render, screen, waitFor } from "@testing-library/react-native";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react-native";
 import { DriverProvider, useDriver } from "./DriverContext";
 import * as driverApi from "../api/driver";
 import { ApiError } from "../api/errors";
@@ -16,9 +16,10 @@ jest.mock("../auth/AuthContext", () => ({
 const mockedDriverApi = driverApi as jest.Mocked<typeof driverApi>;
 
 function Probe() {
-  const { driver, isLoading, hasSignedUp } = useDriver();
+  const { driver, isLoading, hasSignedUp, loadError } = useDriver();
   return (
     <>
+      <Text testID="load-error">{String(loadError)}</Text>
       <Text testID="loading">{String(isLoading)}</Text>
       <Text testID="signed-up">{String(hasSignedUp)}</Text>
       <Text testID="status">{driver?.enum_status ?? "-"}</Text>
@@ -68,6 +69,52 @@ describe("DriverContext", () => {
     await waitFor(() => expect(screen.getByTestId("loading")).toHaveTextContent("false"));
     expect(screen.getByTestId("signed-up")).toHaveTextContent("false");
     expect(screen.getByTestId("status")).toHaveTextContent("-");
+  });
+
+  it("não trata falha de rede/servidor como 'sem cadastro' (evita mandar entregador cadastrado pro formulário)", async () => {
+    mockedDriverApi.getDriverMe.mockRejectedValue(new ApiError(500, "erro interno"));
+
+    render(
+      <DriverProvider>
+        <Probe />
+      </DriverProvider>
+    );
+
+    await waitFor(() => expect(screen.getByTestId("loading")).toHaveTextContent("false"));
+    expect(screen.getByTestId("load-error")).toHaveTextContent("true");
+    expect(screen.getByTestId("signed-up")).toHaveTextContent("false");
+  });
+
+  it("limpa o erro quando uma nova tentativa funciona", async () => {
+    mockedDriverApi.getDriverMe
+      .mockRejectedValueOnce(new Error("Network request failed"))
+      .mockResolvedValue({
+        id_driver: "d1",
+        enum_status: "PENDING_APPROVAL",
+        tx_status_reason: null,
+        tx_full_name: "Fulano",
+        tx_phone: "11999999999",
+        tx_vehicle_type: null,
+        tx_vehicle_plate: null,
+        tx_city: "Santa Inês",
+        bool_online: false,
+      });
+
+    function Retry() {
+      const { refreshDriver } = useDriver();
+      return <Text testID="retry" onPress={() => void refreshDriver()}>retry</Text>;
+    }
+    render(
+      <DriverProvider>
+        <Probe />
+        <Retry />
+      </DriverProvider>
+    );
+
+    await waitFor(() => expect(screen.getByTestId("load-error")).toHaveTextContent("true"));
+    fireEvent.press(screen.getByTestId("retry"));
+    await waitFor(() => expect(screen.getByTestId("load-error")).toHaveTextContent("false"));
+    expect(screen.getByTestId("signed-up")).toHaveTextContent("true");
   });
 
   it("fica em loading desde a primeira renderização depois do login, sem expor 'sem cadastro'", async () => {

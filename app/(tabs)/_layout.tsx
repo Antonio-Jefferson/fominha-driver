@@ -3,13 +3,15 @@ import { Bell, Home, User, Wallet } from "lucide-react-native";
 import { useAuth } from "../../src/auth/AuthContext";
 import { useDriver } from "../../src/driver/DriverContext";
 import { LoadingSpinner } from "../../src/ui/LoadingSpinner";
+import { DriverLoadError } from "../../src/ui/DriverLoadError";
 
 export default function TabsLayout() {
   const { isAuthenticated, isLoading: authLoading } = useAuth();
-  const { driver, hasSignedUp, isLoading: driverLoading } = useDriver();
+  const { driver, hasSignedUp, loadError, isLoading: driverLoading } = useDriver();
 
   if (authLoading || driverLoading) return <LoadingSpinner />;
   if (!isAuthenticated) return <Redirect href="/(auth)/login" />;
+  if (loadError) return <DriverLoadError />;
   if (!hasSignedUp) return <Redirect href="/driver-signup" />;
   if (driver?.enum_status !== "ACTIVE") return <Redirect href="/pending-approval" />;
 
