@@ -18,6 +18,7 @@ import {
   pickupOrder,
   startDelivery,
 } from "../../src/api/deliveries";
+import { isCodeAlreadyUsedError } from "../../src/api/errors";
 
 function brl(cents: number): string {
   return (cents / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
@@ -172,7 +173,21 @@ export default function ActiveDeliveryScreen() {
       await queryClient.invalidateQueries({ queryKey: ["active-delivery"] });
       router.replace("/(tabs)/home");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Código incorreto.");
+      const message = err instanceof Error ? err.message : "Código incorreto.";
+
+      // Esse erro específico só acontece depois que o código já foi
+      // consumido — sinal de que a entrega já foi confirmada antes (ex: a
+      // 1ª tentativa teve sucesso no banco, mas a resposta falhou em chegar
+      // ao app). Em vez de travar o entregador numa tela sem saída,
+      // tratamos isso como recuperação de sucesso.
+      if (isCodeAlreadyUsedError(message)) {
+        setCodeModalOpen(false);
+        await queryClient.invalidateQueries({ queryKey: ["active-delivery"] });
+        router.replace("/(tabs)/home");
+        return;
+      }
+
+      setError(message);
     } finally {
       setBusy(false);
     }
