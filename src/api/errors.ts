@@ -25,3 +25,15 @@ export function extractErrorMessage(body: string): string {
     return body;
   }
 }
+
+/**
+ * "Este código já foi utilizado" só pode ocorrer depois que o código de
+ * confirmação de entrega já foi de fato consumido — ou seja, é sinal
+ * inequívoco de que a entrega já foi confirmada antes (ex: uma tentativa
+ * anterior teve sucesso no banco, mas a resposta HTTP falhou em chegar ao
+ * app). Usado para distinguir esse caso de um erro real (código incorreto,
+ * falha de rede etc.), que deve continuar sendo tratado como erro.
+ */
+export function isCodeAlreadyUsedError(message: string): boolean {
+  return message.toLowerCase().includes("já foi utilizado");
+}
