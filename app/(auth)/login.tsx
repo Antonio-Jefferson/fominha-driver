@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Pressable, Text, View } from "react-native";
+import { KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, View } from "react-native";
+import { Bike } from "lucide-react-native";
 import { useRouter } from "expo-router";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -38,92 +39,106 @@ export default function LoginScreen() {
 
   return (
     <Screen>
-      <View className="flex-1 justify-center gap-10">
-        <View className="gap-8">
-          <AuthLogo className="h-24" />
-          <View className="gap-2">
-            <Text className="text-4xl font-extrabold leading-tight text-foreground">
-              Hora de rodar
-            </Text>
-            <Text className="text-base text-muted-foreground">
-              Entre para ver as entregas disponíveis.
-            </Text>
+      <KeyboardAvoidingView className="flex-1" behavior={Platform.OS === "ios" ? "padding" : undefined}>
+        <ScrollView
+          contentContainerStyle={{ flexGrow: 1 }}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
+        <View className="flex-1 justify-center gap-10 py-6">
+          <View className="gap-8">
+            <AuthLogo className="h-24" />
+            <View className="gap-3">
+              <View className="flex-row items-center gap-1.5 self-start rounded-full bg-muted px-3 py-1.5">
+                <Bike color="#F59E0B" size={16} />
+                <Text className="text-xs font-bold uppercase tracking-wider text-foreground">
+                  App do entregador
+                </Text>
+              </View>
+              <Text className="text-4xl font-extrabold leading-tight text-foreground">
+                Hora de rodar
+              </Text>
+              <Text className="text-base text-muted-foreground">
+                Entre para ver as entregas disponíveis.
+              </Text>
+            </View>
           </View>
-        </View>
 
-        <View className="gap-5">
-          <Controller
-            control={control}
-            name="email"
-            render={({ field: { value, onChange } }) => (
-              <Input
-                label="E-mail"
-                placeholder="voce@email.com"
-                value={value}
-                onChangeText={onChange}
-                autoCapitalize="none"
-                keyboardType="email-address"
-                autoComplete="email"
-                rounded="rounded-full"
-                height="h-14"
-                error={formState.errors.email?.message}
-              />
-            )}
-          />
-
-          <View className="gap-2">
+          <View className="gap-5">
             <Controller
               control={control}
-              name="password"
+              name="email"
               render={({ field: { value, onChange } }) => (
                 <Input
-                  label="Senha"
+                  label="E-mail"
+                  placeholder="voce@email.com"
                   value={value}
                   onChangeText={onChange}
-                  secureTextEntry
-                  autoComplete="current-password"
+                  autoCapitalize="none"
+                  keyboardType="email-address"
+                  autoComplete="email"
                   rounded="rounded-full"
                   height="h-14"
-                  error={formState.errors.password?.message}
+                  error={formState.errors.email?.message}
                 />
               )}
             />
 
-            <Pressable
-              accessibilityRole="link"
-              onPress={() => router.push("/(auth)/forgot-password")}
-            >
-              <Text className="text-sm font-semibold text-primary">
-                Esqueci minha senha
-              </Text>
-            </Pressable>
+            <View className="gap-2">
+              <Controller
+                control={control}
+                name="password"
+                render={({ field: { value, onChange } }) => (
+                  <Input
+                    label="Senha"
+                    value={value}
+                    onChangeText={onChange}
+                    secureTextEntry
+                    autoComplete="current-password"
+                    rounded="rounded-full"
+                    height="h-14"
+                    error={formState.errors.password?.message}
+                  />
+                )}
+              />
+
+              <Pressable
+                accessibilityRole="link"
+                onPress={() => router.push("/(auth)/forgot-password")}
+              >
+                <Text className="text-sm font-semibold text-primary">
+                  Esqueci minha senha
+                </Text>
+              </Pressable>
+            </View>
+
+            {serverError ? (
+              <Text className="text-sm text-destructive">{serverError}</Text>
+            ) : null}
           </View>
 
-          {serverError ? (
-            <Text className="text-sm text-destructive">{serverError}</Text>
-          ) : null}
-        </View>
+          <View className="gap-3">
+            <Button
+              label="Entrar"
+              loading={submitting}
+              rounded="rounded-full"
+              height="h-14"
+              textSize="text-lg"
+              onPress={handleSubmit(onSubmit)}
+            />
 
-        <View className="gap-3">
-          <Button
-            label="Entrar"
-            loading={submitting}
-            rounded="rounded-full"
-            height="h-14"
-            textSize="text-lg"
-            onPress={handleSubmit(onSubmit)}
-          />
-
-          <Button
-            label="Criar conta"
-            variant="outline"
-            rounded="rounded-full"
-            height="h-14"
-            textSize="text-lg"
-            onPress={() => router.push("/(auth)/register")}
-          />
+            <Button
+              label="Criar conta"
+              variant="outline"
+              rounded="rounded-full"
+              height="h-14"
+              textSize="text-lg"
+              onPress={() => router.push("/(auth)/register")}
+            />
+          </View>
         </View>
-      </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </Screen>
   );
 }

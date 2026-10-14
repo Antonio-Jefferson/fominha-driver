@@ -34,7 +34,7 @@ export default function RootLayout() {
               <Stack.Screen name="index" />
               <Stack.Screen name="(tabs)" />
               <Stack.Screen name="(auth)" />
-              <Stack.Screen name="driver-signup" options={{ headerShown: true, title: "Cadastro de entregador" }} />
+              <Stack.Screen name="driver-signup" options={{ gestureEnabled: false }} />
               <Stack.Screen name="pending-approval" />
               <Stack.Screen name="delivery/active" />
               <Stack.Screen name="withdrawals" options={{ headerShown: true, title: "Histórico de saques" }} />

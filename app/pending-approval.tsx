@@ -1,10 +1,11 @@
 import { useEffect } from "react";
 import { Text, View } from "react-native";
-import { useRouter } from "expo-router";
+import { Redirect, useRouter } from "expo-router";
 import { Screen } from "../src/ui/Screen";
 import { Button } from "../src/ui/Button";
 import { useAuth } from "../src/auth/AuthContext";
 import { useDriver } from "../src/driver/DriverContext";
+import { DriverLoadError } from "../src/ui/DriverLoadError";
 
 const REASON_BY_STATUS: Record<string, { title: string; description: string }> = {
   PENDING_APPROVAL: {
@@ -24,8 +25,8 @@ const REASON_BY_STATUS: Record<string, { title: string; description: string }> =
 
 export default function PendingApprovalScreen() {
   const router = useRouter();
-  const { logout } = useAuth();
-  const { driver, isLoading, refreshDriver } = useDriver();
+  const { logout, isAuthenticated } = useAuth();
+  const { driver, loadError, refreshDriver } = useDriver();
 
   useEffect(() => {
     if (driver?.enum_status === "ACTIVE") {
@@ -38,7 +39,10 @@ export default function PendingApprovalScreen() {
     return () => clearInterval(interval);
   }, [refreshDriver]);
 
-  if (isLoading || !driver) return null;
+  if (!isAuthenticated) return <Redirect href="/(auth)/login" />;
+  // Não esconde a tela durante o polling: refreshDriver liga isLoading a cada 15s.
+  if (loadError) return <DriverLoadError />;
+  if (!driver) return null;
 
   const content = REASON_BY_STATUS[driver.enum_status] ?? REASON_BY_STATUS.PENDING_APPROVAL;
 

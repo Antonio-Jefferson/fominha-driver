@@ -8,6 +8,7 @@ import {
 } from "react";
 import { useAuth } from "../auth/AuthContext";
 import { getDriverMe } from "../api/driver";
+import { ApiError } from "../api/errors";
 import type { DriverProfile } from "../@types/driver";
 
 type DriverContextValue = {
@@ -15,6 +16,12 @@ type DriverContextValue = {
   isLoading: boolean;
   /** true assim que existe um cadastro de entregador (mesmo pendente/suspenso). */
   hasSignedUp: boolean;
+  /**
+   * true quando não deu pra saber se o entregador tem cadastro (rede, timeout,
+   * 5xx...). Nesse caso NÃO se pode mandar o usuário pro formulário de cadastro:
+   * ele pode já ser entregador e tomaria "você já tem cadastro" em loop.
+   */
+  loadError: boolean;
   refreshDriver: () => Promise<void>;
 };
 
@@ -26,6 +33,7 @@ export function DriverProvider({ children }: { children: ReactNode }) {
   const [driver, setDriver] = useState<DriverProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [hasSignedUp, setHasSignedUp] = useState(false);
+  const [loadError, setLoadError] = useState(false);
   // Usuário para o qual `driver`/`hasSignedUp` já foram resolvidos. Sem isso,
   // no login há uma renderização com `isAuthenticated=true` e `isLoading=false`
   // (o efeito de busca só roda depois dela): as telas leem "sem cadastro" e
@@ -36,6 +44,7 @@ export function DriverProvider({ children }: { children: ReactNode }) {
     if (!isAuthenticated) {
       setDriver(null);
       setHasSignedUp(false);
+      setLoadError(false);
       setResolvedFor(null);
       setIsLoading(false);
       return;
@@ -45,12 +54,13 @@ export function DriverProvider({ children }: { children: ReactNode }) {
       const profile = await getDriverMe();
       setDriver(profile);
       setHasSignedUp(true);
-    } catch {
-      // 404 (sem cadastro) e qualquer outro erro caem no mesmo estado "sem
-      // cadastro" pra não travar a navegação; telas que dependem de dados
-      // de entregador tratam o erro delas.
+      setLoadError(false);
+    } catch (err) {
       setDriver(null);
       setHasSignedUp(false);
+      // Só o 404 significa "ainda não é entregador". Qualquer outra falha é
+      // incerteza: as telas mostram "tentar de novo" em vez do cadastro.
+      setLoadError(!(err instanceof ApiError && err.status === 404));
     } finally {
       setResolvedFor(userId);
       setIsLoading(false);
@@ -67,6 +77,7 @@ export function DriverProvider({ children }: { children: ReactNode }) {
         driver,
         isLoading: isLoading || (isAuthenticated && resolvedFor !== userId),
         hasSignedUp,
+        loadError,
         refreshDriver,
       }}
     >
