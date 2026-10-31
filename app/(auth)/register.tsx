@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
 import { useRouter } from "expo-router";
-import { ArrowRight, Mail } from "lucide-react-native";
+import { ArrowRight, Check, Mail } from "lucide-react-native";
 import { Screen } from "../../src/ui/Screen";
 import { Input } from "../../src/ui/Input";
 import { Button } from "../../src/ui/Button";
@@ -49,6 +49,7 @@ export default function RegisterScreen() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [acceptedTerms, setAcceptedTerms] = useState<string[]>([]);
+  const [isAdult, setIsAdult] = useState(false);
   const [acceptedTermsError, setAcceptedTermsError] = useState<
     string | undefined
   >(undefined);
@@ -96,6 +97,7 @@ export default function RegisterScreen() {
       password,
       confirmPassword,
       acceptedTerms,
+      isAdult,
     });
     if (!parsed.success) {
       const termsIssue = parsed.error.issues.find(
@@ -130,6 +132,7 @@ export default function RegisterScreen() {
         password,
         signupToken,
         acceptedTerms: parsed.data.acceptedTerms,
+        isAdult: parsed.data.isAdult,
       });
       await login({ email, password });
       router.replace("/(tabs)/home");
@@ -292,6 +295,24 @@ export default function RegisterScreen() {
                 onChange={setAcceptedTerms}
                 error={acceptedTermsError}
               />
+
+              <View className="flex-row items-start gap-3">
+                <Pressable
+                  hitSlop={10}
+                  accessibilityRole="checkbox"
+                  accessibilityState={{ checked: isAdult }}
+                  accessibilityLabel="Declaro que tenho 18 anos ou mais"
+                  onPress={() => setIsAdult((v) => !v)}
+                  className={`h-6 w-6 items-center justify-center rounded border ${
+                    isAdult ? "border-primary bg-primary" : "border-border"
+                  }`}
+                >
+                  {isAdult && <Check size={16} color="#fff" />}
+                </Pressable>
+                <Text className="flex-1 text-sm text-muted-foreground">
+                  Declaro que tenho 18 anos ou mais
+                </Text>
+              </View>
 
               {error ? (
                 <Text className="text-sm text-destructive">{error}</Text>

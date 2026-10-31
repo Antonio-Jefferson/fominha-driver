@@ -47,6 +47,7 @@ export function signup(input: {
   password: string;
   signupToken: string;
   acceptedTerms: string[];
+  isAdult: true;
 }): Promise<{ message?: string }> {
   return api.post("auth/customer/signup", {
     full_name: input.fullName.trim(),
@@ -56,6 +57,7 @@ export function signup(input: {
     password: input.password,
     signup_token: input.signupToken,
     accepted_terms: input.acceptedTerms,
+    is_adult: input.isAdult,
   });
 }
 

@@ -28,6 +28,9 @@ export const signupSchema = z
     acceptedTerms: z
       .array(z.string())
       .min(1, "Você precisa aceitar os documentos obrigatórios"),
+    isAdult: z.literal(true, {
+      errorMap: () => ({ message: "Confirme que você tem 18 anos ou mais" }),
+    }),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "As senhas não conferem",

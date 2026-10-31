@@ -97,6 +97,7 @@ async function acceptAllTerms() {
   fireEvent.press(
     screen.getByLabelText("Li e concordo com Política de Privacidade")
   );
+  fireEvent.press(screen.getByLabelText("Declaro que tenho 18 anos ou mais"));
 }
 
 describe("RegisterScreen", () => {
@@ -140,6 +141,7 @@ describe("RegisterScreen", () => {
         password: "secret123",
         signupToken: "tok",
         acceptedTerms: ["termos-de-uso", "politica-de-privacidade"],
+        isAdult: true,
       })
     );
     await waitFor(() =>
