@@ -1,7 +1,7 @@
 import type { ComponentType } from "react";
 import { ActivityIndicator, Pressable, Text, View } from "react-native";
 
-type Variant = "primary" | "outline" | "ghost";
+type Variant = "primary" | "outline" | "ghost" | "destructive";
 type IconComponent = ComponentType<{ size?: number; color?: string }>;
 
 const VARIANT_STYLES: Record<
@@ -22,6 +22,11 @@ const VARIANT_STYLES: Record<
     container: "bg-transparent active:opacity-60",
     label: "text-primary",
     iconColor: "#F59E0B",
+  },
+  destructive: {
+    container: "bg-destructive active:opacity-80",
+    label: "text-white",
+    iconColor: "#FFFFFF",
   },
 };
 

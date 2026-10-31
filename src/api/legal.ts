@@ -44,6 +44,12 @@ export async function listLegalDocuments(
   );
 }
 
+/** Todos os documentos vigentes do entregador, obrigatórios ou não (tela do Perfil). */
+export async function listDriverLegalDocuments(): Promise<LegalDocumentSummary[]> {
+  const all = await api.get<LegalDocumentSummary[]>("legal/documents");
+  return all.filter((d) => d.audience === "ALL" || d.audience === "DRIVER");
+}
+
 export async function getLegalDocument(slug: string): Promise<LegalDocument> {
   return api.get<LegalDocument>(`legal/documents/${slug}`);
 }

@@ -89,3 +89,11 @@ export function resetPassword(input: {
     new_password: input.newPassword,
   });
 }
+
+/**
+ * Exclui a conta (anonimiza no backend). Exige a senha atual; senha errada
+ * volta 400; entrega em andamento ou saldo a sacar volta 409 com a mensagem.
+ */
+export function deleteAccount(password: string): Promise<void> {
+  return api.post<void>("auth/me/delete-account", { password });
+}
