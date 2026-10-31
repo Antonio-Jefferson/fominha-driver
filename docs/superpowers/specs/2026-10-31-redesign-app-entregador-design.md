@@ -50,7 +50,7 @@ Tema: claro e escuro seguem o celular (`useColorScheme`). Sem seletor no app.
 
 ## Estrutura de código
 
-- Tokens: `tailwind.config.js` (cores com variante escura) e uma constante `src/ui/theme.ts` para os lugares onde NativeWind não alcança (cores de marcador de mapa, ícones, `Switch`).
+- Tokens: `src/ui/theme.ts` (paletas clara e escura, `usePalette`), `ThemeRoot` que injeta as cores como variáveis CSS do NativeWind (`vars`) e `tailwind.config.js` apontando as cores para essas variáveis. Assim as 15 classes de cor já usadas (`text-foreground`, `bg-card`…) passam a trocar de tema sem editar cada tela; `usePalette` serve onde classe não alcança (ícones, marcadores de mapa).
 - Componentes novos em `src/ui/`: `StateCard` (bloco carvão), `OfferSheet`, `CountdownRing`, `RouteLegs`, `StepTracker`, `BalanceCard`, `LedgerList`, `Avatar`, `ListGroup`.
 - `Button.tsx` ganha a variante de altura 64 e o laranja de texto `#B45309`; a API de props continua compatível para as telas que não mudam de uma vez.
 - Cada tela troca o JSX e as classes; hooks, handlers e estados ficam onde estão.
@@ -60,15 +60,15 @@ Tema: claro e escuro seguem o celular (`useColorScheme`). Sem seletor no app.
 
 `GET /deliveries/offers` (`fominha-back/src/delivery/infra/http/delivery.controller.ts`) hoje devolve a linha crua de `DeliveryOffer`. Passa a incluir, sem remover nenhum campo existente:
 
+> Distâncias (km) ficaram fora: o banco não guarda coordenadas de restaurante nem do endereço de entrega (o app as obtém por geocodificação do Google). Calcular isso por oferta aumentaria custo e latência; entra em outra rodada se fizer falta.
+
 | Campo novo | Origem |
 | --- | --- |
 | `pickup_name` | `establishment.tx_name` do pedido |
 | `pickup_district` | `establishment.address.tx_district` |
 | `dropoff_district` | `order.address.tx_district` |
-| `km_to_pickup` | distância (haversine) entre a última posição do entregador e a loja; `null` se faltar coordenada |
-| `km_pickup_to_dropoff` | distância entre a loja e `order.dbl_latitude/longitude`; `null` se faltar |
 
-Compatibilidade: campos novos são opcionais no tipo `DeliveryOffer` do app. Se vierem ausentes ou `null`, `RouteLegs` não é exibido e a oferta mostra só valor e contagem, no mesmo layout.
+Compatibilidade: campos novos são opcionais no tipo `DeliveryOffer` do app. Se vierem ausentes ou `null`, `RouteLegs` não é exibido e a oferta mostra só valor e contagem, no mesmo layout. A oferta mostra restaurante e bairro de retirada e bairro de entrega, sem distância.
 
 ## Erros e estados
 
