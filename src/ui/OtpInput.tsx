@@ -83,6 +83,7 @@ export function OtpInput({
             accessibilityRole="button"
             disabled={resend.loading}
             onPress={handleResend}
+            className="min-h-11 justify-center"
           >
             <Text className="text-sm font-semibold text-primary-text">Reenviar código</Text>
           </Pressable>
