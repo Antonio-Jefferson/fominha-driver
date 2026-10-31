@@ -1,18 +1,40 @@
 /** @type {import('tailwindcss').Config} */
+const channel = (name) => `rgb(var(--${name}) / <alpha-value>)`;
+
 module.exports = {
   content: ["./app/**/*.{js,jsx,ts,tsx}", "./src/**/*.{js,jsx,ts,tsx}"],
   presets: [require("nativewind/preset")],
   theme: {
     extend: {
       colors: {
-        background: { DEFAULT: "#FFFFFF", dark: "#1F1F1F" },
-        foreground: { DEFAULT: "#1F1F1F", dark: "#FFF6E5" },
-        primary: { DEFAULT: "#F59E0B", foreground: "#1F1F1F" },
-        card: { DEFAULT: "#FFFFFF", dark: "#2A2A2A" },
-        muted: { DEFAULT: "#FFF6E5", dark: "#2A2A2A" },
-        "muted-foreground": { DEFAULT: "#6B7280", dark: "#A6A6A6" },
-        border: { DEFAULT: "#EFE6D5", dark: "#333333" },
-        destructive: "#E53935",
+        background: channel("background"),
+        foreground: channel("foreground"),
+        card: channel("card"),
+        border: channel("border"),
+        money: channel("money"),
+        muted: { DEFAULT: channel("muted"), foreground: channel("muted-foreground") },
+        primary: {
+          DEFAULT: channel("primary"),
+          foreground: channel("primary-foreground"),
+          text: channel("primary-text"),
+        },
+        destructive: {
+          DEFAULT: channel("destructive"),
+          foreground: channel("destructive-foreground"),
+        },
+        deck: {
+          DEFAULT: channel("deck"),
+          foreground: channel("deck-foreground"),
+          muted: channel("deck-muted"),
+          border: channel("deck-border"),
+        },
+      },
+      fontFamily: {
+        poppins: ["Poppins_400Regular"],
+        "poppins-medium": ["Poppins_500Medium"],
+        "poppins-semibold": ["Poppins_600SemiBold"],
+        "poppins-bold": ["Poppins_700Bold"],
+        "poppins-extrabold": ["Poppins_800ExtraBold"],
       },
       borderRadius: {
         DEFAULT: "10px",

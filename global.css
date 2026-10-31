@@ -1,3 +1,22 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+:root {
+  --background: 255 253 248;
+  --foreground: 31 31 31;
+  --card: 255 255 255;
+  --muted: 243 238 229;
+  --muted-foreground: 110 106 102;
+  --border: 239 231 217;
+  --primary: 245 158 11;
+  --primary-foreground: 31 31 31;
+  --primary-text: 180 83 9;
+  --destructive: 179 38 30;
+  --destructive-foreground: 255 255 255;
+  --deck: 31 31 31;
+  --deck-foreground: 255 246 229;
+  --deck-muted: 207 198 184;
+  --deck-border: 31 31 31;
+  --money: 46 125 50;
+}
