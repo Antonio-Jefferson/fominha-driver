@@ -1,56 +1,25 @@
 import { useEffect, useRef, useState } from "react";
-import { FlatList, Switch, Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
+import { ChevronRight } from "lucide-react-native";
 import { useRouter } from "expo-router";
 import { useQuery } from "@tanstack/react-query";
 import Toast from "react-native-toast-message";
 import * as Location from "expo-location";
 import { Screen } from "../../src/ui/Screen";
-import { Button } from "../../src/ui/Button";
-import { EmptyState } from "../../src/ui/EmptyState";
 import { LoadingSpinner } from "../../src/ui/LoadingSpinner";
+import { StateCard } from "../../src/ui/StateCard";
+import { OfferSheet } from "../../src/ui/OfferSheet";
+import { Avatar } from "../../src/ui/Avatar";
+import { usePalette } from "../../src/ui/theme";
+import { brl } from "../../src/lib/money";
 import { getActiveDelivery, setOnline } from "../../src/api/deliveries";
-import { useOffers, secondsUntil } from "../../src/driver/useOffers";
+import { getBalance } from "../../src/api/wallet";
+import { useOffers } from "../../src/driver/useOffers";
 import { useDriver } from "../../src/driver/DriverContext";
 import { useLocationTracking } from "../../src/maps/useLocationTracking";
-import type { DeliveryOffer } from "../../src/@types/driver";
 
 function showError(err: unknown, fallback: string) {
   Toast.show({ type: "error", text1: err instanceof Error ? err.message : fallback });
-}
-
-function brl(cents: number): string {
-  return (cents / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
-}
-
-function OfferCard({
-  offer,
-  onAccept,
-  onDecline,
-}: {
-  offer: DeliveryOffer;
-  onAccept: () => void;
-  onDecline: () => void;
-}) {
-  const seconds = secondsUntil(offer.dt_expires_at);
-
-  return (
-    <View className="mb-3 gap-3 rounded border border-border bg-card p-4">
-      <View className="flex-row items-center justify-between">
-        <Text className="text-lg font-bold text-foreground">
-          {brl(offer.int_payout_cents)}
-        </Text>
-        <Text className="text-sm text-muted-foreground">Expira em {seconds}s</Text>
-      </View>
-      <View className="flex-row gap-3">
-        <View className="flex-1">
-          <Button label="Recusar" variant="outline" onPress={onDecline} />
-        </View>
-        <View className="flex-1">
-          <Button label="Aceitar" onPress={onAccept} />
-        </View>
-      </View>
-    </View>
-  );
 }
 
 export default function HomeScreen() {
@@ -116,63 +85,72 @@ export default function HomeScreen() {
     }
   }
 
+  const p = usePalette();
+  const { data: balance } = useQuery({ queryKey: ["driver-balance"], queryFn: getBalance });
+
   if (activeQuery.isLoading) return <LoadingSpinner />;
 
-  return (
-    <Screen>
-      <View className="flex-1">
-        <View className="mt-4 flex-row items-center justify-between rounded border border-border bg-card p-4">
-          <View>
-            <Text className="text-base font-bold text-foreground">
-              {online ? "Você está online" : "Você está offline"}
-            </Text>
-            <Text className="text-sm text-muted-foreground">
-              {online ? "Recebendo ofertas de entrega" : "Fique online para receber ofertas"}
-            </Text>
-          </View>
-          <Switch
-            value={online}
-            onValueChange={(value) => void toggleOnline(value)}
-            disabled={togglingOnline}
-          />
-        </View>
+  const [firstOffer, ...queuedOffers] = offers;
+  const firstName = driver?.tx_full_name.split(" ")[0] ?? "";
 
-        <View className="mt-4 flex-1">
-          {!online ? (
-            <EmptyState
-              title="Você está offline"
-              description="Ative o toggle acima para começar a receber ofertas de entrega."
-            />
-          ) : isLoading ? (
-            <LoadingSpinner />
-          ) : offers.length === 0 ? (
-            <EmptyState
-              title="Nenhuma oferta no momento"
-              description="Assim que houver uma entrega perto de você, ela aparece aqui."
-            />
-          ) : (
-            <FlatList
-              data={offers}
-              keyExtractor={(item) => item.id_delivery_offer}
-              renderItem={({ item }) => (
-                <OfferCard
-                  offer={item}
-                  onAccept={() =>
-                    void accept(item.id_delivery_offer).catch((err) =>
-                      showError(err, "Essa oferta não está mais disponível.")
-                    )
-                  }
-                  onDecline={() =>
-                    void decline(item.id_delivery_offer).catch((err) =>
-                      showError(err, "Não foi possível recusar a oferta.")
-                    )
-                  }
-                />
-              )}
-            />
-          )}
+  return (
+    <View className="flex-1">
+      <Screen>
+        <View className="mt-4 flex-1 gap-4">
+          <View className="flex-row items-center gap-3">
+            <Avatar name={driver?.tx_full_name ?? ""} />
+            <View className="flex-1">
+              <Text className="font-poppins-bold text-xl text-foreground">Olá, {firstName}</Text>
+              <Text className="text-sm text-muted-foreground">
+                {driver?.tx_city}
+                {driver?.tx_vehicle_type ? ` · ${driver.tx_vehicle_type}` : ""}
+              </Text>
+            </View>
+          </View>
+
+          <StateCard
+            online={online}
+            busy={togglingOnline}
+            onToggle={(value) => void toggleOnline(value)}
+          />
+
+          {online && isLoading ? <LoadingSpinner /> : null}
+
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Abrir carteira"
+            onPress={() => router.push("/wallet")}
+            className="flex-row items-center justify-between rounded-3xl border border-border bg-card py-4 pl-5 pr-4 active:opacity-70"
+          >
+            <View>
+              <Text className="text-sm font-semibold text-muted-foreground">Disponível para saque</Text>
+              <Text className="font-poppins-bold text-2xl text-foreground">
+                {balance ? brl(balance.available_cents) : "—"}
+              </Text>
+            </View>
+            <View className="h-11 w-11 items-center justify-center rounded-full bg-muted">
+              <ChevronRight size={22} color={p.foreground} />
+            </View>
+          </Pressable>
         </View>
-      </View>
-    </Screen>
+      </Screen>
+
+      {online && firstOffer ? (
+        <OfferSheet
+          offer={firstOffer}
+          queued={queuedOffers.length}
+          onAccept={() =>
+            void accept(firstOffer.id_delivery_offer).catch((err) =>
+              showError(err, "Essa oferta não está mais disponível.")
+            )
+          }
+          onDecline={() =>
+            void decline(firstOffer.id_delivery_offer).catch((err) =>
+              showError(err, "Não foi possível recusar a oferta.")
+            )
+          }
+        />
+      ) : null}
+    </View>
   );
 }
