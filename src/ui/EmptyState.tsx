@@ -30,11 +30,11 @@ export function EmptyState({
   return (
     <View className="flex-1 items-center justify-center gap-2 px-8">
       {illustration}
-      <Text className="text-center text-lg font-semibold text-foreground">
+      <Text className="text-center font-poppins-semibold text-xl text-foreground">
         {title}
       </Text>
       {description ? (
-        <Text className="text-center text-sm text-muted-foreground">
+        <Text className="text-center text-base text-muted-foreground">
           {description}
         </Text>
       ) : null}
