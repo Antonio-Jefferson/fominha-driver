@@ -5,7 +5,8 @@ import MapView, { Marker, Polyline, PROVIDER_GOOGLE } from "react-native-maps";
 import { geocodeAddress, type Coordinates } from "../../src/maps/geocodeAddress";
 import { getRoute, type Route } from "../../src/maps/getRoute";
 import { openNavigation } from "../../src/maps/openNavigation";
-import { Modal, Text, View } from "react-native";
+import { Modal, Pressable, Text, View } from "react-native";
+import { Navigation } from "lucide-react-native";
 import { useRouter } from "expo-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Screen } from "../../src/ui/Screen";
@@ -20,10 +21,10 @@ import {
 } from "../../src/api/deliveries";
 import { isCodeAlreadyUsedError } from "../../src/api/errors";
 import { KeyboardAwareScroll } from "../../src/ui/KeyboardAwareScroll";
-
-function brl(cents: number): string {
-  return (cents / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
-}
+import { StepTracker } from "../../src/ui/StepTracker";
+import { ThemeRoot } from "../../src/ui/ThemeRoot";
+import { usePalette } from "../../src/ui/theme";
+import { brl } from "../../src/lib/money";
 
 function formatAddress(address: {
   street: string | null;
@@ -45,6 +46,7 @@ function formatAddress(address: {
 export default function ActiveDeliveryScreen() {
   const router = useRouter();
   const queryClient = useQueryClient();
+  const p = usePalette();
 
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -199,127 +201,137 @@ export default function ActiveDeliveryScreen() {
   const destinationLabel =
     activeDelivery.enum_status === "READY_FOR_PICKUP" ? "Retirar em" : "Entregar em";
 
+  const recipient = "name" in destination ? destination.name : activeDelivery.tx_customer_name;
+  const status = activeDelivery.enum_status;
+
   return (
     <Screen>
       <KeyboardAwareScroll
         keyboardShouldPersistTaps="handled"
-        contentContainerClassName="gap-4 pb-10"
+        className="flex-1"
+        contentContainerClassName="gap-4 pb-6 pt-2"
       >
         {destinationCoords ? (
-          <>
-            <View className="h-64 overflow-hidden rounded">
-              <MapView
-                key={destinationCoords ? `${destinationCoords.latitude},${destinationCoords.longitude}` : "no-destination"}
-                provider={PROVIDER_GOOGLE}
-                style={{ flex: 1 }}
-                initialRegion={{
-                  latitude: destinationCoords.latitude,
-                  longitude: destinationCoords.longitude,
-                  latitudeDelta: 0.02,
-                  longitudeDelta: 0.02,
-                }}
-              >
-                {route ? (
-                  <Polyline coordinates={route.points} strokeColor="#F59E0B" strokeWidth={4} />
-                ) : null}
-                <Marker coordinate={destinationCoords} title={destinationLabel} pinColor="#F59E0B" />
-                {driverCoords ? (
-                  <Marker coordinate={driverCoords} title="Você" pinColor="#1F1F1F" />
-                ) : null}
-              </MapView>
-            </View>
-
+          <View className="h-72 overflow-hidden rounded-3xl">
+            <MapView
+              key={`${destinationCoords.latitude},${destinationCoords.longitude}`}
+              provider={PROVIDER_GOOGLE}
+              style={{ flex: 1 }}
+              initialRegion={{
+                latitude: destinationCoords.latitude,
+                longitude: destinationCoords.longitude,
+                latitudeDelta: 0.02,
+                longitudeDelta: 0.02,
+              }}
+            >
+              {route ? (
+                <Polyline coordinates={route.points} strokeColor={p.primary} strokeWidth={5} />
+              ) : null}
+              <Marker coordinate={destinationCoords} title={destinationLabel} pinColor={p.primary} />
+              {driverCoords ? (
+                <Marker coordinate={driverCoords} title="Você" pinColor={p.foreground} />
+              ) : null}
+            </MapView>
             {route ? (
-              <Text className="text-sm text-muted-foreground">
-                {route.distanceText} • {route.durationText}
-              </Text>
+              <View className="absolute bottom-3 left-3 h-10 flex-row items-center rounded-full bg-card px-3.5">
+                <Text className="text-sm text-foreground">
+                  <Text className="font-bold">{route.durationText}</Text> · {route.distanceText}
+                </Text>
+              </View>
             ) : null}
-
-            <Button
-              label="Navegar"
-              variant="outline"
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Navegar"
               onPress={() =>
                 void openNavigation(destinationCoords).catch(() =>
                   setError("Não foi possível abrir o app de navegação.")
                 )
               }
-            />
-          </>
+              className="absolute bottom-3 right-3 h-12 flex-row items-center gap-2 rounded-full bg-deck px-4 active:opacity-80"
+            >
+              <Navigation size={18} color={p.primary} />
+              <Text className="text-[15px] font-semibold text-deck-foreground">Navegar</Text>
+            </Pressable>
+          </View>
         ) : null}
 
-        <View className="mt-4 gap-1">
-          <Text className="text-xs font-bold uppercase tracking-wide text-muted-foreground">
-            {destinationLabel}
-          </Text>
-          <Text className="text-lg font-bold text-foreground">
-            {"name" in destination ? destination.name : activeDelivery.tx_customer_name}
-          </Text>
+        <StepTracker status={status} />
+
+        <View className="gap-1">
+          <Text className="text-sm font-semibold text-muted-foreground">{destinationLabel}</Text>
+          <Text className="font-poppins-bold text-[22px] leading-7 text-foreground">{recipient}</Text>
           <Text className="text-base text-muted-foreground">{formatAddress(destination)}</Text>
         </View>
 
-        <View className="gap-1 rounded border border-border bg-card p-4">
-          <Text className="text-sm text-muted-foreground">Cliente</Text>
-          <Text className="text-base font-semibold text-foreground">{activeDelivery.tx_customer_name}</Text>
-          {activeDelivery.tx_customer_phone ? (
-            <Text className="text-sm text-muted-foreground">{activeDelivery.tx_customer_phone}</Text>
-          ) : null}
-        </View>
-
-        <View className="flex-row justify-between rounded border border-border bg-card p-4">
-          <Text className="text-sm text-muted-foreground">Total do pedido</Text>
-          <Text className="text-base font-bold text-foreground">{brl(activeDelivery.int_total_cents)}</Text>
-        </View>
-        <View className="flex-row justify-between rounded border border-border bg-card p-4">
-          <Text className="text-sm text-muted-foreground">Seu repasse</Text>
-          <Text className="text-base font-bold text-foreground">
-            {brl(activeDelivery.int_delivery_fee_cents)}
-          </Text>
+        <View className="flex-row gap-3">
+          <View className="flex-1 gap-0.5 rounded-2xl border border-border bg-card p-3.5">
+            <Text className="text-sm font-semibold text-muted-foreground">Cliente</Text>
+            <Text className="font-poppins-semibold text-[17px] text-foreground">
+              {activeDelivery.tx_customer_name}
+            </Text>
+            {activeDelivery.tx_customer_phone ? (
+              <Text className="text-sm text-muted-foreground">{activeDelivery.tx_customer_phone}</Text>
+            ) : null}
+          </View>
+          <View className="flex-1 gap-0.5 rounded-2xl border border-border bg-card p-3.5">
+            <Text className="text-sm font-semibold text-muted-foreground">Você recebe</Text>
+            <Text className="font-poppins-bold text-[17px] text-money">
+              {brl(activeDelivery.int_delivery_fee_cents)}
+            </Text>
+            <Text className="text-sm text-muted-foreground">
+              pedido de {brl(activeDelivery.int_total_cents)}
+            </Text>
+          </View>
         </View>
 
         {error ? <Text className="text-sm text-destructive">{error}</Text> : null}
-
-        {activeDelivery.enum_status === "READY_FOR_PICKUP" ? (
-          <Button label="Retirei o pedido" loading={busy} onPress={() => void handlePickup()} />
-        ) : null}
-        {activeDelivery.enum_status === "PICKED_UP" ? (
-          <Button label="Iniciar entrega" loading={busy} onPress={() => void handleStart()} />
-        ) : null}
-        {activeDelivery.enum_status === "DELIVERY" ? (
-          <Button label="Confirmar entrega" onPress={() => setCodeModalOpen(true)} />
-        ) : null}
       </KeyboardAwareScroll>
 
+      <View className="border-t border-border pb-2 pt-3">
+        {status === "READY_FOR_PICKUP" ? (
+          <Button label="Retirei o pedido" loading={busy} onPress={() => void handlePickup()} />
+        ) : null}
+        {status === "PICKED_UP" ? (
+          <Button label="Iniciar entrega" loading={busy} onPress={() => void handleStart()} />
+        ) : null}
+        {status === "DELIVERY" ? (
+          <Button label="Confirmar entrega" onPress={() => setCodeModalOpen(true)} />
+        ) : null}
+      </View>
+
       <Modal visible={codeModalOpen} transparent animationType="slide">
-        <View className="flex-1 items-center justify-center bg-black/50 px-6">
-          <View className="w-full gap-4 rounded bg-background p-6">
-            <Text className="text-lg font-bold text-foreground">
-              Peça o código de confirmação ao cliente
-            </Text>
-            <Input
-              label="Código"
-              value={code}
-              onChangeText={setCode}
-              keyboardType="number-pad"
-              autoFocus
-            />
-            {error ? <Text className="text-sm text-destructive">{error}</Text> : null}
-            <View className="flex-row gap-3">
-              <View className="flex-1">
-                <Button
-                  label="Cancelar"
-                  variant="outline"
-                  onPress={() => {
-                    setCodeModalOpen(false);
-                    setError(null);
-                  }}
-                />
-              </View>
-              <View className="flex-1">
-                <Button label="Confirmar" loading={busy} onPress={() => void handleConfirmCode()} />
+        <ThemeRoot>
+          <View className="flex-1 items-center justify-center bg-black/55 px-4">
+            <View className="w-full gap-4 rounded-3xl bg-background p-6">
+              <Text className="font-poppins-bold text-xl text-foreground">
+                Peça o código de confirmação ao cliente
+              </Text>
+              <Input
+                label="Código"
+                value={code}
+                onChangeText={setCode}
+                keyboardType="number-pad"
+                autoFocus
+              />
+              {error ? <Text className="text-sm text-destructive">{error}</Text> : null}
+              <View className="flex-row gap-3">
+                <View className="flex-1">
+                  <Button
+                    label="Cancelar"
+                    variant="outline"
+                    onPress={() => {
+                      setCodeModalOpen(false);
+                      setError(null);
+                    }}
+                  />
+                </View>
+                <View className="flex-[1.4]">
+                  <Button label="Confirmar" loading={busy} onPress={() => void handleConfirmCode()} />
+                </View>
               </View>
             </View>
           </View>
-        </View>
+        </ThemeRoot>
       </Modal>
     </Screen>
   );
