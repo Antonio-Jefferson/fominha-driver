@@ -5,12 +5,11 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "scheme": "fominhadriver",
-    "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
+    "userInterfaceStyle": "light",
     "icon": "./assets/icon.png",
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "com.aquitem.fominhadriver",
+      "bundleIdentifier": "com.fominhadelivery.entregador",
       "config": {
         "googleMapsApiKey": ""
       },
@@ -23,7 +22,7 @@
       }
     },
     "android": {
-      "package": "com.aquitem.fominhadriver",
+      "package": "com.fominhadelivery.entregador",
       "config": {
         "googleMaps": {
           "apiKey": ""

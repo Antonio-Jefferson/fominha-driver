@@ -32,3 +32,8 @@ yarn-error.*
 
 /.superpowers/
 .claude/worktrees
+
+# segredos (vão como arquivo no EAS)
+google-services.json
+GoogleService-Info.plist
+google-play-service-account.json

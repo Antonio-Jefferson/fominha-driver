@@ -12,3 +12,8 @@ jest.mock("react-native-worklets", () =>
 jest.mock("react-native-reanimated", () =>
   require("react-native-reanimated/mock")
 );
+
+// Teclado: a lib traz mock próprio para o Jest.
+jest.mock("react-native-keyboard-controller", () =>
+  require("react-native-keyboard-controller/jest")
+);
