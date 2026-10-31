@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
 import { Bike } from "lucide-react-native";
 import { useRouter } from "expo-router";
 import { useForm, Controller } from "react-hook-form";
@@ -10,6 +10,7 @@ import { Button } from "../../src/ui/Button";
 import { AuthLogo } from "../../src/ui/AuthLogo";
 import { useAuth } from "../../src/auth/AuthContext";
 import { loginSchema, type LoginForm } from "../../src/lib/validation";
+import { KeyboardAwareScroll } from "../../src/ui/KeyboardAwareScroll";
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -39,8 +40,8 @@ export default function LoginScreen() {
 
   return (
     <Screen>
-      <KeyboardAvoidingView className="flex-1" behavior={Platform.OS === "ios" ? "padding" : undefined}>
-        <ScrollView
+      <View className="flex-1">
+        <KeyboardAwareScroll
           contentContainerStyle={{ flexGrow: 1 }}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
@@ -137,8 +138,8 @@ export default function LoginScreen() {
             />
           </View>
         </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
+        </KeyboardAwareScroll>
+      </View>
     </Screen>
   );
 }

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { KeyboardAvoidingView, Platform, ScrollView, Text, View } from "react-native";
+import { Text, View } from "react-native";
 import { Redirect, useRouter } from "expo-router";
 import { Bike } from "lucide-react-native";
 import { Screen } from "../src/ui/Screen";
@@ -15,6 +15,7 @@ import { useDriver } from "../src/driver/DriverContext";
 import { ALLOWED_CITIES, type AllowedCity } from "../src/@types/auth";
 import { driverSignupSchema } from "../src/lib/validation";
 import { formatCpf, formatPhone } from "../src/lib/masks";
+import { KeyboardAwareScroll } from "../src/ui/KeyboardAwareScroll";
 
 const VEHICLES = ["Moto", "Bicicleta", "Carro"] as const;
 type Vehicle = (typeof VEHICLES)[number];
@@ -108,11 +109,8 @@ export default function DriverSignupScreen() {
 
   return (
     <Screen>
-      <KeyboardAvoidingView
-        className="flex-1"
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
-      >
-        <ScrollView
+      <View className="flex-1">
+        <KeyboardAwareScroll
           contentContainerClassName="pb-8"
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
@@ -210,8 +208,8 @@ export default function DriverSignupScreen() {
               onPress={() => void logout()}
             />
           </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
+        </KeyboardAwareScroll>
+      </View>
     </Screen>
   );
 }

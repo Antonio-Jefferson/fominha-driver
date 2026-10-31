@@ -5,7 +5,7 @@ import MapView, { Marker, Polyline, PROVIDER_GOOGLE } from "react-native-maps";
 import { geocodeAddress, type Coordinates } from "../../src/maps/geocodeAddress";
 import { getRoute, type Route } from "../../src/maps/getRoute";
 import { openNavigation } from "../../src/maps/openNavigation";
-import { Modal, ScrollView, Text, View } from "react-native";
+import { Modal, Text, View } from "react-native";
 import { useRouter } from "expo-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Screen } from "../../src/ui/Screen";
@@ -19,6 +19,7 @@ import {
   startDelivery,
 } from "../../src/api/deliveries";
 import { isCodeAlreadyUsedError } from "../../src/api/errors";
+import { KeyboardAwareScroll } from "../../src/ui/KeyboardAwareScroll";
 
 function brl(cents: number): string {
   return (cents / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
@@ -200,7 +201,10 @@ export default function ActiveDeliveryScreen() {
 
   return (
     <Screen>
-      <ScrollView contentContainerClassName="gap-4 pb-10">
+      <KeyboardAwareScroll
+        keyboardShouldPersistTaps="handled"
+        contentContainerClassName="gap-4 pb-10"
+      >
         {destinationCoords ? (
           <>
             <View className="h-64 overflow-hidden rounded">
@@ -283,7 +287,7 @@ export default function ActiveDeliveryScreen() {
         {activeDelivery.enum_status === "DELIVERY" ? (
           <Button label="Confirmar entrega" onPress={() => setCodeModalOpen(true)} />
         ) : null}
-      </ScrollView>
+      </KeyboardAwareScroll>
 
       <Modal visible={codeModalOpen} transparent animationType="slide">
         <View className="flex-1 items-center justify-center bg-black/50 px-6">

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ScrollView, Text, View } from "react-native";
+import { Text, View } from "react-native";
 import { useRouter } from "expo-router";
 import { ArrowRight, Mail } from "lucide-react-native";
 import { Screen } from "../../src/ui/Screen";
@@ -18,6 +18,7 @@ import {
 } from "../../src/api/auth";
 import type { AllowedCity } from "../../src/@types/auth";
 import { signupSchema } from "../../src/lib/validation";
+import { KeyboardAwareScroll } from "../../src/ui/KeyboardAwareScroll";
 
 type Step = "email" | "code" | "details";
 
@@ -141,7 +142,7 @@ export default function RegisterScreen() {
 
   return (
     <Screen>
-      <ScrollView
+      <KeyboardAwareScroll
         contentContainerClassName="pb-10"
         keyboardShouldPersistTaps="handled"
       >
@@ -311,7 +312,7 @@ export default function RegisterScreen() {
             <Text className="text-sm text-destructive">{error}</Text>
           ) : null}
         </View>
-      </ScrollView>
+      </KeyboardAwareScroll>
     </Screen>
   );
 }

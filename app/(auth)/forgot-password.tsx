@@ -77,7 +77,7 @@ export default function ForgotPasswordScreen() {
   }
 
   return (
-    <Screen>
+    <Screen keyboard="scroll">
       {step !== "done" ? (
         <View className="mt-6">
           <IconBadge icon={Mail} />
