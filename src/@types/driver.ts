@@ -45,6 +45,10 @@ export interface DeliveryOffer {
   int_payout_cents: number;
   dt_offered_at: string;
   dt_expires_at: string;
+  /** Preenchidos pelo back em GET /deliveries/offers; ausentes em versões antigas. */
+  pickup_name?: string | null;
+  pickup_district?: string | null;
+  dropoff_district?: string | null;
 }
 
 export type OrderStatus =
