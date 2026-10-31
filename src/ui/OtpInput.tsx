@@ -84,7 +84,7 @@ export function OtpInput({
             disabled={resend.loading}
             onPress={handleResend}
           >
-            <Text className="text-sm font-semibold text-primary">Reenviar código</Text>
+            <Text className="text-sm font-semibold text-primary-text">Reenviar código</Text>
           </Pressable>
         )
       ) : null}

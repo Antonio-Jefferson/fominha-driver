@@ -5,11 +5,13 @@ import { ChevronRight, FileText } from "lucide-react-native";
 import { Screen } from "../../src/ui/Screen";
 import { LoadingSpinner } from "../../src/ui/LoadingSpinner";
 import { EmptyState } from "../../src/ui/EmptyState";
+import { usePalette } from "../../src/ui/theme";
 import { listDriverLegalDocuments } from "../../src/api/legal";
 
 /** Termos de uso, política de privacidade e demais documentos vigentes. */
 export default function LegalIndexScreen() {
   const router = useRouter();
+  const p = usePalette();
   const { data, isLoading, isError } = useQuery({
     queryKey: ["legal", "driver-documents"],
     queryFn: listDriverLegalDocuments,
@@ -41,7 +43,7 @@ export default function LegalIndexScreen() {
                 index === data.length - 1 ? "" : "border-b border-border"
               }`}
             >
-              <FileText color="#6B7280" size={20} />
+              <FileText color={p.mutedForeground} size={20} />
               <View className="flex-1">
                 <Text className="text-base font-medium text-foreground">
                   {doc.title}
@@ -50,7 +52,7 @@ export default function LegalIndexScreen() {
                   Versão {doc.version}
                 </Text>
               </View>
-              <ChevronRight color="#C4C4C4" size={18} />
+              <ChevronRight color={p.mutedForeground} size={18} />
             </Pressable>
           ))}
         </View>

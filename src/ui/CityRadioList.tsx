@@ -1,5 +1,6 @@
 import { Pressable, Text, View } from "react-native";
 import { CircleCheck, MapPin } from "lucide-react-native";
+import { usePalette } from "./theme";
 
 export function CityRadioList<T extends string>({
   options,
@@ -10,6 +11,7 @@ export function CityRadioList<T extends string>({
   value: T | null;
   onChange: (city: T) => void;
 }) {
+  const p = usePalette();
   return (
     <View className="gap-2">
       {options.map((option) => {
@@ -25,7 +27,7 @@ export function CityRadioList<T extends string>({
             }`}
           >
             <View className="flex-row items-center gap-2">
-              <MapPin color={selected ? "#F59E0B" : "#6B7280"} size={18} />
+              <MapPin color={selected ? p.primaryText : p.mutedForeground} size={18} />
               <Text
                 className={`text-base text-foreground ${
                   selected ? "font-bold" : "font-normal"
@@ -34,7 +36,7 @@ export function CityRadioList<T extends string>({
                 {option}
               </Text>
             </View>
-            {selected ? <CircleCheck color="#16A34A" size={20} /> : null}
+            {selected ? <CircleCheck color={p.money} size={20} /> : null}
           </Pressable>
         );
       })}

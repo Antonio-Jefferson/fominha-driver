@@ -25,7 +25,7 @@ type FieldErrors = Partial<Record<"fullName" | "cpf" | "phone" | "city", string>
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <View className="gap-4">
-      <Text className="text-sm font-extrabold uppercase tracking-wider text-primary">{title}</Text>
+      <Text className="text-sm font-extrabold uppercase tracking-wider text-primary-text">{title}</Text>
       {children}
     </View>
   );

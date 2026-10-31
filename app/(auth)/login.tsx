@@ -8,12 +8,14 @@ import { Screen } from "../../src/ui/Screen";
 import { Input } from "../../src/ui/Input";
 import { Button } from "../../src/ui/Button";
 import { AuthLogo } from "../../src/ui/AuthLogo";
+import { usePalette } from "../../src/ui/theme";
 import { useAuth } from "../../src/auth/AuthContext";
 import { loginSchema, type LoginForm } from "../../src/lib/validation";
 import { KeyboardAwareScroll } from "../../src/ui/KeyboardAwareScroll";
 
 export default function LoginScreen() {
   const router = useRouter();
+  const p = usePalette();
   const { login } = useAuth();
   const [submitting, setSubmitting] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
@@ -51,7 +53,7 @@ export default function LoginScreen() {
             <AuthLogo className="h-24" />
             <View className="gap-3">
               <View className="flex-row items-center gap-1.5 self-start rounded-full bg-muted px-3 py-1.5">
-                <Bike color="#F59E0B" size={16} />
+                <Bike color={p.primaryText} size={16} />
                 <Text className="text-xs font-bold uppercase tracking-wider text-foreground">
                   App do entregador
                 </Text>
@@ -107,7 +109,7 @@ export default function LoginScreen() {
                 accessibilityRole="link"
                 onPress={() => router.push("/(auth)/forgot-password")}
               >
-                <Text className="text-sm font-semibold text-primary">
+                <Text className="text-sm font-semibold text-primary-text">
                   Esqueci minha senha
                 </Text>
               </Pressable>

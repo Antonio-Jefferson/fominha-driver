@@ -85,7 +85,7 @@ export function AcceptanceCheckboxes({
             </Pressable>
             <Text className="flex-1 text-sm text-muted-foreground">
               Li e concordo com{" "}
-              <Link href={`/legal/${doc.slug}`} className="font-medium text-primary">
+              <Link href={`/legal/${doc.slug}`} className="font-medium text-primary-text">
                 {doc.title}
               </Link>
             </Text>

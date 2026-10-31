@@ -2,6 +2,7 @@ import { Pressable, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ArrowLeft } from "lucide-react-native";
 import type { NativeStackHeaderProps } from "expo-router";
+import { usePalette } from "./theme";
 
 /**
  * Cabeçalho das telas de autenticação (cadastro, recuperar senha): fundo
@@ -11,6 +12,7 @@ import type { NativeStackHeaderProps } from "expo-router";
  */
 export function AuthHeader({ navigation, options, back }: NativeStackHeaderProps) {
   const insets = useSafeAreaInsets();
+  const p = usePalette();
   const title = options.title ?? "";
 
   return (
@@ -22,12 +24,12 @@ export function AuthHeader({ navigation, options, back }: NativeStackHeaderProps
             accessibilityLabel="Voltar"
             onPress={() => navigation.goBack()}
             hitSlop={8}
-            className="h-10 w-10 items-center justify-center rounded-full bg-muted active:opacity-60"
+            className="h-11 w-11 items-center justify-center rounded-full bg-muted active:opacity-60"
           >
-            <ArrowLeft color="#1F1F1F" size={20} />
+            <ArrowLeft color={p.foreground} size={20} />
           </Pressable>
         ) : (
-          <View className="h-10 w-10" />
+          <View className="h-11 w-11" />
         )}
         {title ? (
           <Text

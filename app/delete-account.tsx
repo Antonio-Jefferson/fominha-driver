@@ -6,6 +6,7 @@ import Toast from "react-native-toast-message";
 import { Screen } from "../src/ui/Screen";
 import { Input } from "../src/ui/Input";
 import { Button } from "../src/ui/Button";
+import { usePalette } from "../src/ui/theme";
 import { useAuth } from "../src/auth/AuthContext";
 import { deleteAccount } from "../src/api/auth";
 import { ApiError } from "../src/api/errors";
@@ -19,6 +20,7 @@ const WHAT_HAPPENS = [
 
 export default function DeleteAccountScreen() {
   const router = useRouter();
+  const p = usePalette();
   const { logout } = useAuth();
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -64,7 +66,7 @@ export default function DeleteAccountScreen() {
     <Screen keyboard="scroll">
       <View className="mt-6 flex-1 gap-6">
         <View className="flex-row items-center gap-3 rounded-2xl bg-destructive/10 p-4">
-          <TriangleAlert color="#E53935" size={22} />
+          <TriangleAlert color={p.destructive} size={22} />
           <Text className="flex-1 text-sm font-medium text-foreground">
             Ao excluir a conta, você perde o acesso ao app com este e-mail.
           </Text>

@@ -3,7 +3,7 @@ import { Text, View } from "react-native";
 export function StepProgress({ step, total = 3 }: { step: number; total?: number }) {
   return (
     <View className="gap-2">
-      <Text className="text-xs font-bold tracking-wider text-primary">
+      <Text className="text-xs font-bold tracking-wider text-primary-text">
         PASSO {step} DE {total}
       </Text>
       <View className="flex-row gap-1.5">
