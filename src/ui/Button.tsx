@@ -1,34 +1,49 @@
 import type { ComponentType } from "react";
 import { ActivityIndicator, Pressable, Text, View } from "react-native";
+import { usePalette, type Tokens } from "./theme";
 
 type Variant = "primary" | "outline" | "ghost" | "destructive";
 type IconComponent = ComponentType<{ size?: number; color?: string }>;
 
-const VARIANT_STYLES: Record<
-  Variant,
-  { container: string; label: string; iconColor: string }
-> = {
+const VARIANT_STYLES: Record<Variant, { container: string; label: string }> = {
   primary: {
     container: "bg-primary active:opacity-80",
     label: "text-primary-foreground",
-    iconColor: "#1F1F1F",
   },
   outline: {
-    container: "border border-border bg-transparent active:opacity-80",
+    container: "border-2 border-border bg-transparent active:opacity-70",
     label: "text-foreground",
-    iconColor: "#1F1F1F",
   },
   ghost: {
     container: "bg-transparent active:opacity-60",
-    label: "text-primary",
-    iconColor: "#F59E0B",
+    label: "text-primary-text",
   },
   destructive: {
     container: "bg-destructive active:opacity-80",
-    label: "text-white",
-    iconColor: "#FFFFFF",
+    label: "text-destructive-foreground",
   },
 };
+
+/** Principal 64 pt; os demais 56 pt. */
+const DEFAULT_HEIGHT: Record<Variant, string> = {
+  primary: "h-16",
+  outline: "h-14",
+  ghost: "h-14",
+  destructive: "h-14",
+};
+
+function contentColor(variant: Variant, p: Tokens): string {
+  switch (variant) {
+    case "primary":
+      return p.primaryForeground;
+    case "outline":
+      return p.foreground;
+    case "ghost":
+      return p.primaryText;
+    case "destructive":
+      return p.destructiveForeground;
+  }
+}
 
 export function Button({
   label,
@@ -36,9 +51,9 @@ export function Button({
   variant = "primary",
   loading = false,
   disabled = false,
-  rounded = "rounded",
-  height = "h-12",
-  textSize = "text-base",
+  rounded = "rounded-2xl",
+  height,
+  textSize = "text-[17px]",
   icon: Icon,
 }: {
   label: string;
@@ -48,14 +63,16 @@ export function Button({
   disabled?: boolean;
   /** Classe de border-radius do NativeWind, ex.: "rounded-full". */
   rounded?: string;
-  /** Classe de altura do NativeWind, ex.: "h-14". */
+  /** Classe de altura do NativeWind, ex.: "h-14". Padrão: 64 pt no primário, 56 pt nos demais. */
   height?: string;
   /** Classe de tamanho de fonte do NativeWind, ex.: "text-lg". */
   textSize?: string;
   icon?: IconComponent;
 }) {
+  const p = usePalette();
   const isInactive = loading || disabled;
   const styles = VARIANT_STYLES[variant];
+  const color = contentColor(variant, p);
 
   return (
     <Pressable
@@ -63,16 +80,16 @@ export function Button({
       accessibilityState={{ disabled: isInactive, busy: loading }}
       disabled={isInactive}
       onPress={onPress}
-      className={`${height} flex-row items-center justify-center px-4 ${rounded} ${styles.container} ${
+      className={`${height ?? DEFAULT_HEIGHT[variant]} flex-row items-center justify-center px-4 ${rounded} ${styles.container} ${
         isInactive ? "opacity-50" : ""
       }`}
     >
       {loading ? (
-        <ActivityIndicator color={styles.iconColor} />
+        <ActivityIndicator color={color} />
       ) : (
         <View className="flex-row items-center gap-2">
-          <Text className={`${textSize} font-semibold ${styles.label}`}>{label}</Text>
-          {Icon ? <Icon size={18} color={styles.iconColor} /> : null}
+          <Text className={`${textSize} font-poppins-semibold ${styles.label}`}>{label}</Text>
+          {Icon ? <Icon size={20} color={color} /> : null}
         </View>
       )}
     </Pressable>
