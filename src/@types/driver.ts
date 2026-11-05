@@ -102,3 +102,15 @@ export interface DriverBalance {
     occurred_at: string;
   }>;
 }
+
+/** GET deliveries/active/map: a etapa atual da entrega, para o mapa. */
+export type ActiveDeliveryMap = {
+  leg: "store" | "customer";
+  target: { latitude: number; longitude: number; source: string | null } | null;
+  courier: { latitude: number; longitude: number } | null;
+  route: {
+    coordinates: [number, number][];
+    distance_meters: number;
+    duration_seconds: number;
+  } | null;
+};

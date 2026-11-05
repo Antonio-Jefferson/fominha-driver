@@ -1,12 +1,12 @@
 import { Linking, Platform } from "react-native";
-import type { Coordinates } from "./geocodeAddress";
+import type { LatLng } from "./animatedPosition";
 
 /**
  * Abre o app de navegação nativo (Google Maps no Android; Google Maps se
  * instalado, senão Apple Maps, no iOS) já com o destino pronto pra
  * navegação turn-by-turn — este app não implementa GPS embutido.
  */
-export async function openNavigation(destination: Coordinates): Promise<void> {
+export async function openNavigation(destination: LatLng): Promise<void> {
   const { latitude, longitude } = destination;
 
   if (Platform.OS === "android") {

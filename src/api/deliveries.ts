@@ -1,5 +1,5 @@
 import { api } from "./client";
-import type { ActiveDelivery, DeliveryOffer } from "../@types/driver";
+import type { ActiveDelivery, ActiveDeliveryMap, DeliveryOffer } from "../@types/driver";
 
 export function listOffers(): Promise<DeliveryOffer[]> {
   return api.get<DeliveryOffer[]>("deliveries/offers");
@@ -13,8 +13,15 @@ export function declineOffer(offerId: string): Promise<{ status: string }> {
   return api.post(`deliveries/offers/${offerId}/decline`);
 }
 
-export function getActiveDelivery(): Promise<ActiveDelivery | null> {
-  return api.get<ActiveDelivery | null>("deliveries/active");
+// Sem entrega ativa o back responde com corpo vazio, que chega aqui como
+// `undefined`. O React Query recusa esse valor e mantém o dado anterior: o
+// entregador ficaria preso na tela da corrida já concluída.
+export async function getActiveDelivery(): Promise<ActiveDelivery | null> {
+  return (await api.get<ActiveDelivery | null>("deliveries/active")) ?? null;
+}
+
+export async function getActiveDeliveryMap(): Promise<ActiveDeliveryMap | null> {
+  return (await api.get<ActiveDeliveryMap | null>("deliveries/active/map")) ?? null;
 }
 
 export function pickupOrder(orderId: string): Promise<{ status: string }> {
