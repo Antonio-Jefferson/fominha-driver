@@ -39,6 +39,11 @@ export function confirmDeliveryCode(
   return api.post(`deliveries/${orderId}/confirm-code`, { code });
 }
 
+/** Entrega de motoboy da loja: esse modelo não tem código de confirmação. */
+export function completeDelivery(orderId: string): Promise<{ status: string }> {
+  return api.post(`deliveries/${orderId}/complete`);
+}
+
 export function updateLocation(
   latitude: number,
   longitude: number

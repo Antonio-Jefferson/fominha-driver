@@ -10,6 +10,8 @@ export interface DriverProfile {
   tx_vehicle_plate: string | null;
   tx_city: string;
   bool_online: boolean;
+  /** Preenchido: motoboy da equipe de uma loja, que recebe as entregas dela. */
+  id_establishment?: string | null;
 }
 
 export interface DriverSignupInput {
@@ -76,6 +78,7 @@ export interface ActiveDelivery {
   int_total_cents: number;
   int_delivery_fee_cents: number;
   enum_payment_method: string;
+  enum_delivery_mode: "PLATFORM" | "RESTAURANT_OWN";
   pickup: DeliveryAddress & { name: string };
   dropoff: DeliveryAddress & { complement: string | null };
 }

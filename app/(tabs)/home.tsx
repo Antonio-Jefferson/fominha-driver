@@ -108,11 +108,24 @@ export default function HomeScreen() {
             </View>
           </View>
 
-          <StateCard
-            online={online}
-            busy={togglingOnline}
-            onToggle={(value) => void toggleOnline(value)}
-          />
+          {driver?.id_establishment ? (
+            // Motoboy da loja não pega corrida da plataforma nem precisa ficar
+            // online: a entrega abre sozinha quando a loja escolhe ele.
+            <View className="gap-1 rounded-3xl bg-deck p-5">
+              <Text className="font-poppins-bold text-xl text-deck-foreground">
+                Entregas da sua loja
+              </Text>
+              <Text className="text-sm text-deck-foreground">
+                Quando a loja escolher você, a entrega abre aqui com o endereço e a rota.
+              </Text>
+            </View>
+          ) : (
+            <StateCard
+              online={online}
+              busy={togglingOnline}
+              onToggle={(value) => void toggleOnline(value)}
+            />
+          )}
 
           {online && isLoading ? <LoadingSpinner /> : null}
 
