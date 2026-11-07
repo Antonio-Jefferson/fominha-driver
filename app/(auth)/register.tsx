@@ -16,7 +16,7 @@ import {
   signup,
 } from "../../src/api/auth";
 import { signupSchema } from "../../src/lib/validation";
-import { officialCityName } from "../../src/api/ibge";
+import { CityStatePicker } from "../../src/ui/CityStatePicker";
 import { KeyboardAwareScroll } from "../../src/ui/KeyboardAwareScroll";
 
 type Step = "email" | "code" | "details";
@@ -121,7 +121,7 @@ export default function RegisterScreen() {
         fullName,
         email,
         phone,
-        city: await officialCityName(parsed.data.city, parsed.data.state),
+        city: parsed.data.city,
         state: parsed.data.state,
         password,
         signupToken,
@@ -255,29 +255,13 @@ export default function RegisterScreen() {
                 height="h-14"
               />
 
-              <View className="flex-row gap-3">
-                <View className="flex-1">
-                  <Input
-                    label="Cidade"
-                    value={city}
-                    onChangeText={setCity}
-                    textContentType="addressCity"
-                    rounded="rounded-full"
-                    height="h-14"
-                  />
-                </View>
-                <View className="w-24">
-                  <Input
-                    label="UF"
-                    value={uf}
-                    onChangeText={(v) => setUf(v.replace(/[^a-zA-Z]/g, "").toUpperCase().slice(0, 2))}
-                    autoCapitalize="characters"
-                    maxLength={2}
-                    rounded="rounded-full"
-                    height="h-14"
-                  />
-                </View>
-              </View>
+              <CityStatePicker
+                value={{ state: uf, city }}
+                onChange={(v) => {
+                  setUf(v.state);
+                  setCity(v.city);
+                }}
+              />
 
               <Input
                 label="Senha"

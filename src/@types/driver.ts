@@ -21,6 +21,8 @@ export interface DriverSignupInput {
   tx_vehicle_type?: string;
   tx_vehicle_plate?: string;
   tx_city: string;
+  /** UF da cidade de atuação (lista do IBGE). */
+  tx_state?: string;
 }
 
 export interface DriverUpdateInput {

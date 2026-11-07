@@ -73,7 +73,10 @@ export const driverSignupSchema = z.object({
     .refine((v) => v.replace(/\D/g, "").length >= 10, "Informe um telefone com DDD"),
   vehicleType: z.string().optional(),
   vehiclePlate: z.string().optional(),
-  // Cidade de atuação: qualquer lugar do país.
+  // Cidade e UF de atuação, escolhidas nas listas do IBGE.
+  state: z.enum([...BR_STATES] as [string, ...string[]], {
+    errorMap: () => ({ message: "Escolha o estado" }),
+  }),
   city: z
     .string()
     .trim()

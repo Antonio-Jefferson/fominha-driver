@@ -1,32 +1,30 @@
-import { officialCityName } from "./ibge";
+import { cityKey, clearCityCache, listCities } from "./ibge";
 
 const fetchMock = jest.fn();
 beforeEach(() => {
+  clearCityCache();
   fetchMock.mockReset();
   (global as unknown as { fetch: typeof fetch }).fetch = fetchMock as unknown as typeof fetch;
 });
 
-describe("officialCityName", () => {
-  it("troca o texto digitado pelo nome oficial do IBGE", async () => {
-    fetchMock.mockResolvedValue({ ok: true, json: async () => [{ nome: "Zé Doca" }, { nome: "Zé Doca do Norte" }] });
-    await expect(officialCityName(" ze doca ", "MA")).resolves.toBe("Zé Doca");
+describe("ibge", () => {
+  it("lista os municípios da UF e guarda em cache", async () => {
+    fetchMock.mockResolvedValue({ ok: true, json: async () => [{ nome: "Bom Jardim" }, { nome: "Zé Doca" }] });
+    await expect(listCities("MA")).resolves.toEqual(["Bom Jardim", "Zé Doca"]);
+    await listCities("MA");
+    expect(fetchMock).toHaveBeenCalledTimes(1);
     expect(fetchMock).toHaveBeenCalledWith(
-      "https://servicodados.ibge.gov.br/api/v1/localidades/estados/MA/municipios"
+      "https://servicodados.ibge.gov.br/api/v1/localidades/estados/MA/municipios?orderBy=nome"
     );
   });
 
-  it("sem correspondência, mantém o que foi digitado", async () => {
-    fetchMock.mockResolvedValue({ ok: true, json: async () => [{ nome: "São Luís" }] });
-    await expect(officialCityName("Cidade Nova", "MA")).resolves.toBe("Cidade Nova");
+  it("falha da API vira erro (a tela oferece tentar de novo ou digitar)", async () => {
+    fetchMock.mockResolvedValue({ ok: false, status: 503 });
+    await expect(listCities("SP")).rejects.toThrow("IBGE 503");
   });
 
-  it("falha de rede não trava o cadastro", async () => {
-    fetchMock.mockRejectedValue(new Error("offline"));
-    await expect(officialCityName("Campinas", "SP")).resolves.toBe("Campinas");
-  });
-
-  it("UF inválida nem consulta", async () => {
-    await expect(officialCityName("Campinas", "")).resolves.toBe("Campinas");
-    expect(fetchMock).not.toHaveBeenCalled();
+  it("cityKey ignora acento, caixa e pontuação", () => {
+    expect(cityKey("  Zé  Doca ")).toBe("ze doca");
+    expect(cityKey("Pau-d'Arco")).toBe("pau d arco");
   });
 });

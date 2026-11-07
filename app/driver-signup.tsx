@@ -4,7 +4,7 @@ import { Redirect, useRouter } from "expo-router";
 import { Bike } from "lucide-react-native";
 import { Screen } from "../src/ui/Screen";
 import { Input } from "../src/ui/Input";
-import { officialCityName } from "../src/api/ibge";
+import { CityStatePicker } from "../src/ui/CityStatePicker";
 import { Button } from "../src/ui/Button";
 import { IconBadge } from "../src/ui/IconBadge";
 import { ChoiceChips } from "../src/ui/ChoiceChips";
@@ -19,7 +19,7 @@ import { KeyboardAwareScroll } from "../src/ui/KeyboardAwareScroll";
 const VEHICLES = ["Moto", "Bicicleta", "Carro"] as const;
 type Vehicle = (typeof VEHICLES)[number];
 
-type FieldErrors = Partial<Record<"fullName" | "cpf" | "phone" | "city", string>>;
+type FieldErrors = Partial<Record<"fullName" | "cpf" | "phone" | "city" | "state", string>>;
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -42,6 +42,7 @@ export default function DriverSignupScreen() {
   const [vehicle, setVehicle] = useState<Vehicle | null>(null);
   const [vehiclePlate, setVehiclePlate] = useState("");
   const [city, setCity] = useState(userCity ?? "");
+  const [uf, setUf] = useState(user?.defaultAddress?.state ?? "");
   const [errors, setErrors] = useState<FieldErrors>({});
   const [formError, setFormError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -64,12 +65,13 @@ export default function DriverSignupScreen() {
       vehicleType: vehicle ?? undefined,
       vehiclePlate: needsPlate ? vehiclePlate.trim().toUpperCase() || undefined : undefined,
       city,
+      state: uf,
     });
     if (!parsed.success) {
       const next: FieldErrors = {};
       for (const issue of parsed.error.issues) {
         const key = issue.path[0] as keyof FieldErrors;
-        if (key in { fullName: 1, cpf: 1, phone: 1, city: 1 } && !next[key]) next[key] = issue.message;
+        if (key in { fullName: 1, cpf: 1, phone: 1, city: 1, state: 1 } && !next[key]) next[key] = issue.message;
       }
       setErrors(next);
       return;
@@ -83,9 +85,10 @@ export default function DriverSignupScreen() {
         tx_phone: parsed.data.phone.trim(),
         tx_vehicle_type: parsed.data.vehicleType,
         tx_vehicle_plate: parsed.data.vehiclePlate,
-        // Nome oficial do IBGE, pela UF do endereço: a oferta de entrega casa
-        // a cidade do entregador com a da loja.
-        tx_city: await officialCityName(parsed.data.city, user?.defaultAddress?.state ?? ""),
+        // Cidade e UF escolhidas nas listas do IBGE: a oferta de entrega casa
+        // cidade + UF do entregador com as da loja.
+        tx_city: parsed.data.city,
+        tx_state: parsed.data.state,
       });
       await refreshDriver();
       router.replace("/pending-approval");
@@ -180,15 +183,14 @@ export default function DriverSignupScreen() {
             </Section>
 
             <Section title="Onde você vai rodar">
-              <Input
-                label="Cidade"
-                value={city}
-                onChangeText={setCity}
-                textContentType="addressCity"
-                rounded="rounded-full"
-                height="h-14"
+              <CityStatePicker
+                value={{ state: uf, city }}
+                onChange={(v) => {
+                  setUf(v.state);
+                  setCity(v.city);
+                }}
+                error={errors.city ?? errors.state}
               />
-              {errors.city ? <Text className="text-xs text-destructive">{errors.city}</Text> : null}
             </Section>
           </View>
 
