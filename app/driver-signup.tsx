@@ -4,6 +4,7 @@ import { Redirect, useRouter } from "expo-router";
 import { Bike } from "lucide-react-native";
 import { Screen } from "../src/ui/Screen";
 import { Input } from "../src/ui/Input";
+import { officialCityName } from "../src/api/ibge";
 import { Button } from "../src/ui/Button";
 import { IconBadge } from "../src/ui/IconBadge";
 import { ChoiceChips } from "../src/ui/ChoiceChips";
@@ -82,7 +83,9 @@ export default function DriverSignupScreen() {
         tx_phone: parsed.data.phone.trim(),
         tx_vehicle_type: parsed.data.vehicleType,
         tx_vehicle_plate: parsed.data.vehiclePlate,
-        tx_city: parsed.data.city,
+        // Nome oficial do IBGE, pela UF do endereço: a oferta de entrega casa
+        // a cidade do entregador com a da loja.
+        tx_city: await officialCityName(parsed.data.city, user?.defaultAddress?.state ?? ""),
       });
       await refreshDriver();
       router.replace("/pending-approval");

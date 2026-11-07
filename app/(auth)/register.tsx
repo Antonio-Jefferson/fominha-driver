@@ -16,6 +16,7 @@ import {
   signup,
 } from "../../src/api/auth";
 import { signupSchema } from "../../src/lib/validation";
+import { officialCityName } from "../../src/api/ibge";
 import { KeyboardAwareScroll } from "../../src/ui/KeyboardAwareScroll";
 
 type Step = "email" | "code" | "details";
@@ -120,7 +121,7 @@ export default function RegisterScreen() {
         fullName,
         email,
         phone,
-        city: parsed.data.city,
+        city: await officialCityName(parsed.data.city, parsed.data.state),
         state: parsed.data.state,
         password,
         signupToken,
