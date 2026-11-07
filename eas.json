@@ -18,7 +18,7 @@
         "buildType": "apk"
       },
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://fominha-back.onrender.com/fominhadelivery/api/v1"
+        "EXPO_PUBLIC_API_URL": "https://api.fominhadelivery.com/fominhadelivery/api/v1"
       }
     },
     "production": {
@@ -28,7 +28,7 @@
         "buildType": "app-bundle"
       },
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://fominha-back.onrender.com/fominhadelivery/api/v1"
+        "EXPO_PUBLIC_API_URL": "https://api.fominhadelivery.com/fominhadelivery/api/v1"
       }
     }
   },
