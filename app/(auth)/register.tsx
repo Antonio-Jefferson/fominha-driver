@@ -9,28 +9,18 @@ import { AcceptanceCheckboxes } from "../../src/ui/AcceptanceCheckboxes";
 import { StepProgress } from "../../src/ui/StepProgress";
 import { IconBadge } from "../../src/ui/IconBadge";
 import { OtpInput } from "../../src/ui/OtpInput";
-import { CityRadioList } from "../../src/ui/CityRadioList";
 import { useAuth } from "../../src/auth/AuthContext";
 import {
   confirmVerificationCode,
   requestVerificationCode,
   signup,
 } from "../../src/api/auth";
-import type { AllowedCity } from "../../src/@types/auth";
 import { signupSchema } from "../../src/lib/validation";
 import { KeyboardAwareScroll } from "../../src/ui/KeyboardAwareScroll";
 
 type Step = "email" | "code" | "details";
 
 const STEP_NUMBER: Record<Step, number> = { email: 1, code: 2, details: 3 };
-
-// Mesma lista de ALLOWED_CITIES, só reordenada pra bater com o design.
-const CITY_DISPLAY_ORDER: AllowedCity[] = [
-  "Santa Inês",
-  "Zé Doca",
-  "Bom Jardim",
-  "Gov. Newton Bello",
-];
 
 export default function RegisterScreen() {
   const router = useRouter();
@@ -45,7 +35,8 @@ export default function RegisterScreen() {
   const [code, setCode] = useState("");
   const [signupToken, setSignupToken] = useState<string | null>(null);
   const [phone, setPhone] = useState("");
-  const [city, setCity] = useState<AllowedCity | null>(null);
+  const [city, setCity] = useState("");
+  const [uf, setUf] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [acceptedTerms, setAcceptedTerms] = useState<string[]>([]);
@@ -94,6 +85,7 @@ export default function RegisterScreen() {
       email,
       phone,
       city,
+      state: uf,
       password,
       confirmPassword,
       acceptedTerms,
@@ -129,6 +121,7 @@ export default function RegisterScreen() {
         email,
         phone,
         city: parsed.data.city,
+        state: parsed.data.state,
         password,
         signupToken,
         acceptedTerms: parsed.data.acceptedTerms,
@@ -261,15 +254,28 @@ export default function RegisterScreen() {
                 height="h-14"
               />
 
-              <View className="gap-2">
-                <Text className="text-sm font-medium text-foreground">
-                  Cidade
-                </Text>
-                <CityRadioList
-                  options={CITY_DISPLAY_ORDER}
-                  value={city}
-                  onChange={setCity}
-                />
+              <View className="flex-row gap-3">
+                <View className="flex-1">
+                  <Input
+                    label="Cidade"
+                    value={city}
+                    onChangeText={setCity}
+                    textContentType="addressCity"
+                    rounded="rounded-full"
+                    height="h-14"
+                  />
+                </View>
+                <View className="w-24">
+                  <Input
+                    label="UF"
+                    value={uf}
+                    onChangeText={(v) => setUf(v.replace(/[^a-zA-Z]/g, "").toUpperCase().slice(0, 2))}
+                    autoCapitalize="characters"
+                    maxLength={2}
+                    rounded="rounded-full"
+                    height="h-14"
+                  />
+                </View>
               </View>
 
               <Input

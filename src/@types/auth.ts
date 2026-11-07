@@ -26,11 +26,10 @@ export interface ConfirmationCodeResponse {
   signupToken: string;
 }
 
-export const ALLOWED_CITIES = [
-  "Gov. Newton Bello",
-  "Zé Doca",
-  "Bom Jardim",
-  "Santa Inês",
+/** As 27 UFs. O Fominha atende o Brasil inteiro: a cidade é livre. */
+export const BR_STATES = [
+  "AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT", "MS", "MG", "PA",
+  "PB", "PR", "PE", "PI", "RJ", "RN", "RS", "RO", "RR", "SC", "SP", "SE", "TO",
 ] as const;
 
-export type AllowedCity = (typeof ALLOWED_CITIES)[number];
+export type BrState = (typeof BR_STATES)[number];

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { ALLOWED_CITIES } from "../@types/auth";
+import { BR_STATES } from "../@types/auth";
 import { isValidCpf } from "./masks";
 
 // zod 3.25's built-in .email() exige TLD de 2+ letras e rejeita "a@b.c".
@@ -19,10 +19,19 @@ export const signupSchema = z
     fullName: z.string().min(3, "Informe seu nome completo"),
     email: emailField,
     phone: z.string().optional(),
-    // O backend rejeita qualquer cidade fora desta lista com 400.
-    city: z.enum([...ALLOWED_CITIES] as [string, ...string[]], {
-      errorMap: () => ({ message: "Escolha uma cidade atendida" }),
-    }),
+    // Qualquer cidade do país; o backend só confere que é um nome (2 a 80).
+    city: z
+      .string()
+      .trim()
+      .min(2, "Informe sua cidade")
+      .max(80, "Nome da cidade muito longo")
+      .regex(/\p{L}/u, "Informe sua cidade"),
+    state: z.preprocess(
+      (v) => (typeof v === "string" ? v.trim().toUpperCase() : v),
+      z.enum([...BR_STATES] as [string, ...string[]], {
+        errorMap: () => ({ message: "Informe a UF (ex.: MA, SP)" }),
+      })
+    ),
     password: z.string().min(6, "A senha precisa de ao menos 6 caracteres"),
     confirmPassword: z.string(),
     acceptedTerms: z
@@ -64,9 +73,13 @@ export const driverSignupSchema = z.object({
     .refine((v) => v.replace(/\D/g, "").length >= 10, "Informe um telefone com DDD"),
   vehicleType: z.string().optional(),
   vehiclePlate: z.string().optional(),
-  city: z.enum([...ALLOWED_CITIES] as [string, ...string[]], {
-    errorMap: () => ({ message: "Escolha sua cidade de atuação" }),
-  }),
+  // Cidade de atuação: qualquer lugar do país.
+  city: z
+    .string()
+    .trim()
+    .min(2, "Informe sua cidade")
+    .max(80, "Nome da cidade muito longo")
+    .regex(/\p{L}/u, "Informe sua cidade"),
 });
 
 export type DriverSignupForm = z.infer<typeof driverSignupSchema>;

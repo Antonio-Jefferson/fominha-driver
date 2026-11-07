@@ -126,7 +126,8 @@ describe("RegisterScreen", () => {
     renderScreen();
     await advanceToPasswordStep();
 
-    fireEvent.press(screen.getByText("Zé Doca"));
+    fireEvent.changeText(screen.getByLabelText("Cidade"), "Zé Doca");
+    fireEvent.changeText(screen.getByLabelText("UF"), "ma");
     fireEvent.changeText(screen.getByLabelText("Senha"), "secret123");
     fireEvent.changeText(screen.getByLabelText("Confirmar senha"), "secret123");
     await acceptAllTerms();
@@ -138,6 +139,7 @@ describe("RegisterScreen", () => {
         email: "ana@example.com",
         phone: "",
         city: "Zé Doca",
+        state: "MA",
         password: "secret123",
         signupToken: "tok",
         acceptedTerms: ["termos-de-uso", "politica-de-privacidade"],
@@ -156,7 +158,8 @@ describe("RegisterScreen", () => {
     renderScreen();
     await advanceToPasswordStep();
 
-    fireEvent.press(screen.getByText("Zé Doca"));
+    fireEvent.changeText(screen.getByLabelText("Cidade"), "Zé Doca");
+    fireEvent.changeText(screen.getByLabelText("UF"), "ma");
     fireEvent.changeText(screen.getByLabelText("Senha"), "secret123");
     fireEvent.changeText(screen.getByLabelText("Confirmar senha"), "outra123");
     await acceptAllTerms();
@@ -185,7 +188,8 @@ describe("RegisterScreen", () => {
     renderScreen();
     await advanceToPasswordStep();
 
-    fireEvent.press(screen.getByText("Zé Doca"));
+    fireEvent.changeText(screen.getByLabelText("Cidade"), "Zé Doca");
+    fireEvent.changeText(screen.getByLabelText("UF"), "ma");
     fireEvent.changeText(screen.getByLabelText("Senha"), "secret123");
     fireEvent.changeText(screen.getByLabelText("Confirmar senha"), "secret123");
     await waitFor(() =>
@@ -208,7 +212,8 @@ describe("RegisterScreen", () => {
     renderScreen();
     await advanceToPasswordStep();
 
-    fireEvent.press(screen.getByText("Zé Doca"));
+    fireEvent.changeText(screen.getByLabelText("Cidade"), "Zé Doca");
+    fireEvent.changeText(screen.getByLabelText("UF"), "ma");
     fireEvent.changeText(screen.getByLabelText("Senha"), "secret123");
     fireEvent.changeText(screen.getByLabelText("Confirmar senha"), "secret123");
     await acceptAllTerms();

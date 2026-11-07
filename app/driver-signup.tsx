@@ -7,12 +7,10 @@ import { Input } from "../src/ui/Input";
 import { Button } from "../src/ui/Button";
 import { IconBadge } from "../src/ui/IconBadge";
 import { ChoiceChips } from "../src/ui/ChoiceChips";
-import { CityRadioList } from "../src/ui/CityRadioList";
 import { signupDriver } from "../src/api/driver";
 import { ApiError } from "../src/api/errors";
 import { useAuth } from "../src/auth/AuthContext";
 import { useDriver } from "../src/driver/DriverContext";
-import { ALLOWED_CITIES, type AllowedCity } from "../src/@types/auth";
 import { driverSignupSchema } from "../src/lib/validation";
 import { formatCpf, formatPhone } from "../src/lib/masks";
 import { KeyboardAwareScroll } from "../src/ui/KeyboardAwareScroll";
@@ -42,9 +40,7 @@ export default function DriverSignupScreen() {
   const [phone, setPhone] = useState(formatPhone(user?.phone ?? ""));
   const [vehicle, setVehicle] = useState<Vehicle | null>(null);
   const [vehiclePlate, setVehiclePlate] = useState("");
-  const [city, setCity] = useState<AllowedCity | null>(
-    (ALLOWED_CITIES as readonly string[]).includes(userCity ?? "") ? (userCity as AllowedCity) : null
-  );
+  const [city, setCity] = useState(userCity ?? "");
   const [errors, setErrors] = useState<FieldErrors>({});
   const [formError, setFormError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -181,7 +177,14 @@ export default function DriverSignupScreen() {
             </Section>
 
             <Section title="Onde você vai rodar">
-              <CityRadioList options={ALLOWED_CITIES} value={city} onChange={setCity} />
+              <Input
+                label="Cidade"
+                value={city}
+                onChangeText={setCity}
+                textContentType="addressCity"
+                rounded="rounded-full"
+                height="h-14"
+              />
               {errors.city ? <Text className="text-xs text-destructive">{errors.city}</Text> : null}
             </Section>
           </View>
