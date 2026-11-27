@@ -17,3 +17,16 @@ jest.mock("react-native-reanimated", () =>
 jest.mock("react-native-keyboard-controller", () =>
   require("react-native-keyboard-controller/jest")
 );
+
+jest.mock("@maplibre/maplibre-react-native", () => {
+  const { View } = require("react-native");
+  const Pass = ({ children, testID }) => require("react").createElement(View, { testID }, children);
+  return {
+    __esModule: true,
+    Map: Pass,
+    Camera: () => null,
+    GeoJSONSource: Pass,
+    Layer: () => null,
+    Marker: Pass,
+  };
+});

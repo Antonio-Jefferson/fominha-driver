@@ -1,12 +1,9 @@
-import { useEffect, useState } from "react";
-import Constants from "expo-constants";
-import * as Location from "expo-location";
-import MapView, { Marker, Polyline, PROVIDER_GOOGLE } from "react-native-maps";
-import { geocodeAddress, type Coordinates } from "../../src/maps/geocodeAddress";
-import { getRoute, type Route } from "../../src/maps/getRoute";
+import { useState } from "react";
+import { LiveMap } from "../../src/maps/LiveMap";
 import { openNavigation } from "../../src/maps/openNavigation";
-import { Modal, Pressable, Text, View } from "react-native";
-import { Navigation } from "lucide-react-native";
+import { routeSummary } from "../../src/maps/routeSummary";
+import { Alert, Modal, Pressable, Text, View } from "react-native";
+import { Bike, MapPin, Navigation } from "lucide-react-native";
 import { useRouter } from "expo-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Screen } from "../../src/ui/Screen";
@@ -14,8 +11,10 @@ import { Input } from "../../src/ui/Input";
 import { Button } from "../../src/ui/Button";
 import { LoadingSpinner } from "../../src/ui/LoadingSpinner";
 import {
+  completeDelivery,
   confirmDeliveryCode,
   getActiveDelivery,
+  getActiveDeliveryMap,
   pickupOrder,
   startDelivery,
 } from "../../src/api/deliveries";
@@ -52,86 +51,17 @@ export default function ActiveDeliveryScreen() {
   const [error, setError] = useState<string | null>(null);
   const [codeModalOpen, setCodeModalOpen] = useState(false);
   const [code, setCode] = useState("");
-  // Hooks (e o derivado `geocodableDestination`) precisam ficar antes de
-  // qualquer return condicional — Rules of Hooks. O JSX que realmente usa
-  // esses dados só aparece bem mais abaixo, depois do guard de loading.
-  const [destinationCoords, setDestinationCoords] = useState<Coordinates | null>(null);
-  const [driverCoords, setDriverCoords] = useState<Coordinates | null>(null);
-
   const { data: delivery, isLoading } = useQuery({
     queryKey: ["active-delivery"],
     queryFn: getActiveDelivery,
     refetchInterval: 10_000,
   });
-
-  const geocodableDestination = delivery
-    ? delivery.enum_status === "READY_FOR_PICKUP"
-      ? delivery.pickup
-      : delivery.dropoff
-    : null;
-  const googleMapsApiKey = Constants.expoConfig?.extra?.googleMapsApiKey as string | undefined;
-
-  // Cancela resultado de geocoding fora de ordem: se o destino mudar de
-  // novo antes da resposta anterior chegar, essa resposta antiga não pode
-  // sobrescrever o resultado do destino atual. Mesmo padrão do efeito de
-  // posição do entregador logo abaixo. `setDestinationCoords(null)` no
-  // início evita mostrar o pin do destino anterior como se já fosse o
-  // atual enquanto o novo geocoding ainda está em voo.
-  useEffect(() => {
-    let cancelled = false;
-    setDestinationCoords(null);
-
-    if (!geocodableDestination) return;
-
-    void geocodeAddress(geocodableDestination, googleMapsApiKey ?? "").then((coords) => {
-      if (!cancelled) setDestinationCoords(coords);
-    });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [geocodableDestination, googleMapsApiKey]);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    async function loadDriverPosition() {
-      const { status } = await Location.getForegroundPermissionsAsync();
-      if (status !== "granted" || cancelled) return;
-      const position = await Location.getCurrentPositionAsync({});
-      if (!cancelled) {
-        setDriverCoords({
-          latitude: position.coords.latitude,
-          longitude: position.coords.longitude,
-        });
-      }
-    }
-
-    void loadDriverPosition();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  const [route, setRoute] = useState<Route | null>(null);
-
-  // Mesma proteção de corrida do efeito de geocoding acima: se o destino
-  // mudar de novo antes da resposta da Directions API chegar, essa resposta
-  // antiga não pode sobrescrever a rota do destino atual.
-  useEffect(() => {
-    let cancelled = false;
-    setRoute(null);
-
-    if (!driverCoords || !destinationCoords || !googleMapsApiKey) return;
-
-    void getRoute(driverCoords, destinationCoords, googleMapsApiKey).then((result) => {
-      if (!cancelled) setRoute(result);
-    });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [driverCoords, destinationCoords, googleMapsApiKey]);
+  const { data: map } = useQuery({
+    queryKey: ["active-delivery-map", delivery?.enum_status],
+    queryFn: getActiveDeliveryMap,
+    enabled: Boolean(delivery),
+    refetchInterval: 10_000,
+  });
 
   if (isLoading || !delivery) return <LoadingSpinner />;
 
@@ -196,6 +126,32 @@ export default function ActiveDeliveryScreen() {
     }
   }
 
+  async function handleCompleteOwnDelivery() {
+    setError(null);
+    setBusy(true);
+    try {
+      await completeDelivery(activeDelivery.id_order);
+      await queryClient.invalidateQueries({ queryKey: ["active-delivery"] });
+      router.replace("/(tabs)/home");
+    } catch (err) {
+      // O cliente ou a loja podem ter concluído antes: a próxima leitura tira
+      // a corrida da tela. A mensagem explica o que aconteceu até lá.
+      setError(err instanceof Error ? err.message : "Não foi possível concluir a entrega.");
+      await queryClient.invalidateQueries({ queryKey: ["active-delivery"] });
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  function confirmOwnDelivery() {
+    Alert.alert("Entregou o pedido?", "O cliente será avisado de que o pedido chegou.", [
+      { text: "Ainda não", style: "cancel" },
+      { text: "Entreguei", onPress: () => void handleCompleteOwnDelivery() },
+    ]);
+  }
+
+  const isOwnDelivery = activeDelivery.enum_delivery_mode === "RESTAURANT_OWN";
+
   const destination =
     activeDelivery.enum_status === "READY_FOR_PICKUP" ? activeDelivery.pickup : activeDelivery.dropoff;
   const destinationLabel =
@@ -211,42 +167,37 @@ export default function ActiveDeliveryScreen() {
         className="flex-1"
         contentContainerClassName="gap-4 pb-6 pt-2"
       >
-        {destinationCoords ? (
+        {map?.target ? (
           <View className="h-72 overflow-hidden rounded-3xl">
-            <MapView
-              key={`${destinationCoords.latitude},${destinationCoords.longitude}`}
-              provider={PROVIDER_GOOGLE}
+            <LiveMap
+              testID="delivery-map"
               style={{ flex: 1 }}
-              initialRegion={{
-                latitude: destinationCoords.latitude,
-                longitude: destinationCoords.longitude,
-                latitudeDelta: 0.02,
-                longitudeDelta: 0.02,
-              }}
-            >
-              {route ? (
-                <Polyline coordinates={route.points} strokeColor={p.primary} strokeWidth={5} />
-              ) : null}
-              <Marker coordinate={destinationCoords} title={destinationLabel} pinColor={p.primary} />
-              {driverCoords ? (
-                <Marker coordinate={driverCoords} title="Você" pinColor={p.foreground} />
-              ) : null}
-            </MapView>
-            {route ? (
+              courier={map.courier}
+              destination={map.target}
+              route={map.route}
+              routeColor={p.primary}
+              courierMarker={
+                <View className="h-10 w-10 items-center justify-center rounded-full border-2 border-white bg-deck">
+                  <Bike size={20} color={p.primary} />
+                </View>
+              }
+              destinationMarker={<MapPin size={36} color={p.primary} fill={p.foreground} />}
+            />
+            {map.route ? (
               <View className="absolute bottom-3 left-3 h-10 flex-row items-center rounded-full bg-card px-3.5">
-                <Text className="text-sm text-foreground">
-                  <Text className="font-bold">{route.durationText}</Text> · {route.distanceText}
-                </Text>
+                <Text className="text-sm font-bold text-foreground">{routeSummary(map.route)}</Text>
               </View>
             ) : null}
             <Pressable
               accessibilityRole="button"
               accessibilityLabel="Navegar"
-              onPress={() =>
-                void openNavigation(destinationCoords).catch(() =>
+              onPress={() => {
+                const target = map.target;
+                if (!target) return;
+                void openNavigation(target).catch(() =>
                   setError("Não foi possível abrir o app de navegação.")
-                )
-              }
+                );
+              }}
               className="absolute bottom-3 right-3 h-12 flex-row items-center gap-2 rounded-full bg-deck px-4 active:opacity-80"
             >
               <Navigation size={18} color={p.primary} />
@@ -255,7 +206,8 @@ export default function ActiveDeliveryScreen() {
           </View>
         ) : null}
 
-        <StepTracker status={status} />
+        {/* Motoboy da loja já sai com o pedido: as etapas de retirada não existem. */}
+        {isOwnDelivery ? null : <StepTracker status={status} />}
 
         <View className="gap-1">
           <Text className="text-sm font-semibold text-muted-foreground">{destinationLabel}</Text>
@@ -274,13 +226,27 @@ export default function ActiveDeliveryScreen() {
             ) : null}
           </View>
           <View className="flex-1 gap-0.5 rounded-2xl border border-border bg-card p-3.5">
-            <Text className="text-sm font-semibold text-muted-foreground">Você recebe</Text>
-            <Text className="font-poppins-bold text-[17px] text-money">
-              {brl(activeDelivery.int_delivery_fee_cents)}
-            </Text>
-            <Text className="text-sm text-muted-foreground">
-              pedido de {brl(activeDelivery.int_total_cents)}
-            </Text>
+            {isOwnDelivery ? (
+              // A taxa do motoboy da loja é combinada com a loja, não passa pelo app.
+              <>
+                <Text className="text-sm font-semibold text-muted-foreground">Pagamento</Text>
+                <Text className="font-poppins-bold text-[17px] text-money">
+                  {activeDelivery.enum_payment_method === "CASH"
+                    ? `Cobrar ${brl(activeDelivery.int_total_cents)}`
+                    : "Já pago"}
+                </Text>
+              </>
+            ) : (
+              <>
+                <Text className="text-sm font-semibold text-muted-foreground">Você recebe</Text>
+                <Text className="font-poppins-bold text-[17px] text-money">
+                  {brl(activeDelivery.int_delivery_fee_cents)}
+                </Text>
+                <Text className="text-sm text-muted-foreground">
+                  pedido de {brl(activeDelivery.int_total_cents)}
+                </Text>
+              </>
+            )}
           </View>
         </View>
 
@@ -294,7 +260,10 @@ export default function ActiveDeliveryScreen() {
         {status === "PICKED_UP" ? (
           <Button label="Iniciar entrega" loading={busy} onPress={() => void handleStart()} />
         ) : null}
-        {status === "DELIVERY" ? (
+        {status === "DELIVERY" && isOwnDelivery ? (
+          <Button label="Entreguei o pedido" loading={busy} onPress={confirmOwnDelivery} />
+        ) : null}
+        {status === "DELIVERY" && !isOwnDelivery ? (
           <Button label="Confirmar entrega" onPress={() => setCodeModalOpen(true)} />
         ) : null}
       </View>

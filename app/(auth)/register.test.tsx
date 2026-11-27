@@ -100,6 +100,21 @@ async function acceptAllTerms() {
   fireEvent.press(screen.getByLabelText("Declaro que tenho 18 anos ou mais"));
 }
 
+/** Escolhe MA e Zé Doca no seletor (lista do IBGE simulada). */
+async function pickZeDoca() {
+  fireEvent.press(screen.getByLabelText("Escolher estado"));
+  fireEvent.press(screen.getByLabelText("Maranhão (MA)"));
+  fireEvent.press(screen.getByLabelText("Escolher cidade"));
+  fireEvent.press(await screen.findByLabelText("Zé Doca"));
+}
+
+beforeEach(() => {
+  (global as unknown as { fetch: unknown }).fetch = jest.fn().mockResolvedValue({
+    ok: true,
+    json: async () => [{ nome: "Bom Jardim" }, { nome: "Zé Doca" }],
+  });
+});
+
 describe("RegisterScreen", () => {
   it("requests a verification code for the typed email", async () => {
     renderScreen();
@@ -126,7 +141,7 @@ describe("RegisterScreen", () => {
     renderScreen();
     await advanceToPasswordStep();
 
-    fireEvent.press(screen.getByText("Zé Doca"));
+    await pickZeDoca();
     fireEvent.changeText(screen.getByLabelText("Senha"), "secret123");
     fireEvent.changeText(screen.getByLabelText("Confirmar senha"), "secret123");
     await acceptAllTerms();
@@ -138,6 +153,7 @@ describe("RegisterScreen", () => {
         email: "ana@example.com",
         phone: "",
         city: "Zé Doca",
+        state: "MA",
         password: "secret123",
         signupToken: "tok",
         acceptedTerms: ["termos-de-uso", "politica-de-privacidade"],
@@ -156,7 +172,7 @@ describe("RegisterScreen", () => {
     renderScreen();
     await advanceToPasswordStep();
 
-    fireEvent.press(screen.getByText("Zé Doca"));
+    await pickZeDoca();
     fireEvent.changeText(screen.getByLabelText("Senha"), "secret123");
     fireEvent.changeText(screen.getByLabelText("Confirmar senha"), "outra123");
     await acceptAllTerms();
@@ -185,7 +201,7 @@ describe("RegisterScreen", () => {
     renderScreen();
     await advanceToPasswordStep();
 
-    fireEvent.press(screen.getByText("Zé Doca"));
+    await pickZeDoca();
     fireEvent.changeText(screen.getByLabelText("Senha"), "secret123");
     fireEvent.changeText(screen.getByLabelText("Confirmar senha"), "secret123");
     await waitFor(() =>
@@ -208,7 +224,7 @@ describe("RegisterScreen", () => {
     renderScreen();
     await advanceToPasswordStep();
 
-    fireEvent.press(screen.getByText("Zé Doca"));
+    await pickZeDoca();
     fireEvent.changeText(screen.getByLabelText("Senha"), "secret123");
     fireEvent.changeText(screen.getByLabelText("Confirmar senha"), "secret123");
     await acceptAllTerms();

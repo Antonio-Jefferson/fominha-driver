@@ -10,6 +10,8 @@ export interface DriverProfile {
   tx_vehicle_plate: string | null;
   tx_city: string;
   bool_online: boolean;
+  /** Preenchido: motoboy da equipe de uma loja, que recebe as entregas dela. */
+  id_establishment?: string | null;
 }
 
 export interface DriverSignupInput {
@@ -19,6 +21,8 @@ export interface DriverSignupInput {
   tx_vehicle_type?: string;
   tx_vehicle_plate?: string;
   tx_city: string;
+  /** UF da cidade de atuação (lista do IBGE). */
+  tx_state?: string;
 }
 
 export interface DriverUpdateInput {
@@ -76,6 +80,7 @@ export interface ActiveDelivery {
   int_total_cents: number;
   int_delivery_fee_cents: number;
   enum_payment_method: string;
+  enum_delivery_mode: "PLATFORM" | "RESTAURANT_OWN";
   pickup: DeliveryAddress & { name: string };
   dropoff: DeliveryAddress & { complement: string | null };
 }
@@ -102,3 +107,15 @@ export interface DriverBalance {
     occurred_at: string;
   }>;
 }
+
+/** GET deliveries/active/map: a etapa atual da entrega, para o mapa. */
+export type ActiveDeliveryMap = {
+  leg: "store" | "customer";
+  target: { latitude: number; longitude: number; source: string | null } | null;
+  courier: { latitude: number; longitude: number } | null;
+  route: {
+    coordinates: [number, number][];
+    distance_meters: number;
+    duration_seconds: number;
+  } | null;
+};

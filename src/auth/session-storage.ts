@@ -15,7 +15,11 @@ export async function loadSession(): Promise<Session | null> {
 }
 
 export async function saveSession(session: Session): Promise<void> {
-  await SecureStore.setItemAsync(SESSION_KEY, JSON.stringify(session));
+  // O envio da posição roda com o aparelho bloqueado durante a entrega. No iOS,
+  // o padrão (WHEN_UNLOCKED) não deixaria ler o token nesse momento.
+  await SecureStore.setItemAsync(SESSION_KEY, JSON.stringify(session), {
+    keychainAccessible: SecureStore.AFTER_FIRST_UNLOCK,
+  });
 }
 
 export async function clearSession(): Promise<void> {

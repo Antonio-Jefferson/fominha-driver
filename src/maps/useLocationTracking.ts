@@ -3,13 +3,12 @@ import * as Location from "expo-location";
 import { updateLocation } from "../api/deliveries";
 
 export function shouldTrack(input: { online: boolean; hasActiveDelivery: boolean }): boolean {
-  return input.online || input.hasActiveDelivery;
+  return input.online && !input.hasActiveDelivery;
 }
 
 /**
- * Enquanto `online` ou com entrega ativa, pede permissão de localização
- * (só "enquanto o app é usado" — sem rastreio em segundo plano nesta fase)
- * e envia a posição pro backend a cada atualização relevante do GPS.
+ * Online e sem entrega: envia a posição só com o app aberto, para receber
+ * ofertas próximas. Durante a entrega quem cuida é `useDeliveryLocation`.
  */
 export function useLocationTracking(input: { online: boolean; hasActiveDelivery: boolean }): void {
   const subscriptionRef = useRef<Location.LocationSubscription | null>(null);

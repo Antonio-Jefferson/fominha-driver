@@ -14,7 +14,7 @@ jest.mock("expo-router", () => ({
 }));
 jest.mock("../src/auth/AuthContext", () => ({
   useAuth: () => ({
-    user: { id: "u1", email: "ana@example.com", full_name: "Ana Souza", phone: null, defaultAddress: { city: "Santa Inês" } },
+    user: { id: "u1", email: "ana@example.com", full_name: "Ana Souza", phone: null, defaultAddress: { city: "Santa Inês", state: "MA" } },
     isAuthenticated: true,
     logout: mockLogout,
   }),
@@ -76,7 +76,7 @@ describe("DriverSignupScreen", () => {
     fireEvent.press(screen.getByText("Enviar cadastro"));
     await waitFor(() => expect(mockReplace).toHaveBeenCalledWith("/pending-approval"));
     expect(mockedSignup).toHaveBeenCalledWith(
-      expect.objectContaining({ tx_cpf: "52998224725", tx_vehicle_type: "Moto", tx_city: "Santa Inês" })
+      expect.objectContaining({ tx_cpf: "52998224725", tx_vehicle_type: "Moto", tx_city: "Santa Inês", tx_state: "MA" })
     );
   });
 

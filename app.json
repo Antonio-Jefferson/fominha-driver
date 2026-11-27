@@ -10,9 +10,6 @@
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.fominhadelivery.entregador",
-      "config": {
-        "googleMapsApiKey": ""
-      },
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
         "NSLocationWhenInUseUsageDescription": "Usamos sua localização para te conectar a entregas próximas e mostrar a rota até o destino.",
@@ -23,11 +20,6 @@
     },
     "android": {
       "package": "com.fominhadelivery.entregador",
-      "config": {
-        "googleMaps": {
-          "apiKey": ""
-        }
-      },
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#FF7A0A"
@@ -51,12 +43,13 @@
       [
         "expo-location",
         {
-          "locationWhenInUsePermission": "Usamos sua localização enquanto você está online ou em uma entrega, para te conectar a pedidos próximos e mostrar a rota até o destino.",
+          "locationWhenInUsePermission": "Usamos sua localização enquanto você está online ou em uma entrega, inclusive com o app em segundo plano durante a entrega, para mostrar ao cliente onde o pedido está e traçar a rota até o destino.",
           "locationAlwaysAndWhenInUsePermission": false,
           "locationAlwaysPermission": false,
           "motionUsagePermission": false,
-          "isIosBackgroundLocationEnabled": false,
-          "isAndroidBackgroundLocationEnabled": false
+          "isIosBackgroundLocationEnabled": true,
+          "isAndroidBackgroundLocationEnabled": false,
+          "isAndroidForegroundServiceEnabled": true
         }
       ],
       [
@@ -73,11 +66,11 @@
           "resizeMode": "contain",
           "backgroundColor": "#F59E0B"
         }
-      ]
+      ],
+      "@maplibre/maplibre-react-native"
     ],
     "extra": {
       "router": {},
-      "googleMapsApiKey": "",
       "eas": {
         "projectId": "6ab76fb1-b2d3-4491-84d1-c1163d214de2"
       }

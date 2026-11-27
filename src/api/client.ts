@@ -66,8 +66,8 @@ async function doRefreshAccessToken(): Promise<string | null> {
 
     return data.access_token;
   } catch {
-    await clearSession();
-    onUnauthorized?.();
+    // Falha de rede não é sessão inválida: em sinal fraco, derrubar o login
+    // aqui tiraria o entregador da corrida. A próxima tentativa renova.
     return null;
   }
 }

@@ -25,7 +25,7 @@ export function usePushHandlers(): void {
       response: Notifications.NotificationResponse | null | undefined
     ) => {
       const type = response?.notification.request.content.data?.type;
-      if (type === "DELIVERY_OFFER") router.push("/(tabs)/home");
+      if (type === "DELIVERY_OFFER" || type === "OWN_DELIVERY") router.push("/(tabs)/home");
     };
 
     const sub = Notifications.addNotificationResponseReceivedListener(openOffer);

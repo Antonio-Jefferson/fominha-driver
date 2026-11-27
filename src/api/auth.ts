@@ -1,6 +1,5 @@
 import { api } from "./client";
 import type {
-  AllowedCity,
   AuthUser,
   ConfirmationCodeResponse,
   Session,
@@ -43,7 +42,8 @@ export function signup(input: {
   fullName: string;
   email: string;
   phone?: string;
-  city: AllowedCity | string;
+  city: string;
+  state: string;
   password: string;
   signupToken: string;
   acceptedTerms: string[];
@@ -53,7 +53,8 @@ export function signup(input: {
     full_name: input.fullName.trim(),
     email: normalizeEmail(input.email),
     phone: blankToUndefined(input.phone),
-    city: input.city,
+    city: input.city.trim(),
+    state: input.state,
     password: input.password,
     signup_token: input.signupToken,
     accepted_terms: input.acceptedTerms,

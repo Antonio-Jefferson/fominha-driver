@@ -8,8 +8,9 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { KeyboardProvider } from "react-native-keyboard-controller";
 import Toast from "react-native-toast-message";
 import * as SplashScreen from "expo-splash-screen";
-import { AuthProvider } from "../src/auth/AuthContext";
-import { DriverProvider } from "../src/driver/DriverContext";
+import { AuthProvider, useAuth } from "../src/auth/AuthContext";
+import { DriverProvider, useDriver } from "../src/driver/DriverContext";
+import { useDeliveryLocation } from "../src/maps/useDeliveryLocation";
 import { queryClient } from "../src/lib/query-client";
 import { usePushHandlers } from "../src/push/usePushHandlers";
 import { ThemeRoot } from "../src/ui/ThemeRoot";
@@ -19,6 +20,13 @@ SplashScreen.preventAutoHideAsync();
 
 function PushBridge() {
   usePushHandlers();
+  return null;
+}
+
+function DeliveryLocationBridge() {
+  const { isAuthenticated } = useAuth();
+  const { driver } = useDriver();
+  useDeliveryLocation(isAuthenticated && Boolean(driver));
   return null;
 }
 
@@ -41,6 +49,7 @@ export default function RootLayout() {
               <DriverProvider>
                 <StatusBar style="auto" />
                 <PushBridge />
+                <DeliveryLocationBridge />
                 <Stack screenOptions={{ headerShown: false }}>
                   <Stack.Screen name="index" />
                   <Stack.Screen name="(tabs)" />

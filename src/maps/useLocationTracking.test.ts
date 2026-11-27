@@ -5,8 +5,9 @@ describe("shouldTrack", () => {
     expect(shouldTrack({ online: true, hasActiveDelivery: false })).toBe(true);
   });
 
-  it("rastreia quando há uma entrega ativa, mesmo offline", () => {
-    expect(shouldTrack({ online: false, hasActiveDelivery: true })).toBe(true);
+  it("com entrega ativa deixa o GPS para o rastreio da entrega", () => {
+    expect(shouldTrack({ online: true, hasActiveDelivery: true })).toBe(false);
+    expect(shouldTrack({ online: false, hasActiveDelivery: true })).toBe(false);
   });
 
   it("não rastreia quando offline e sem entrega ativa", () => {
